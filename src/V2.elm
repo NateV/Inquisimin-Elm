@@ -16,19 +16,6 @@ type Fruit = Apple
 
 
 
-type alias Model = 
-    { firstName : Question String
-    , age : Question Int
-    , fruit : Question Fruit
-    }
-
-
-
-main : Program () Model Msg
-main = Browser.sandbox {init = init, update = update, view = view}
-
-
-
 
 {-| The data this interview is supposed to collect 
 -}
@@ -38,10 +25,38 @@ type alias Results =
     , fruit : Fruit
     }
 
+
+type YesNoUnknown = Yes | No | Unknown
+
+
+type alias PizzaResults = 
+    { pizzaType : String }
+
+type alias Model = 
+    { firstName : Question String
+    , age : Question Int
+    , fruit : Question Fruit
+    , pizza : Question String
+    , pizzaChoice : YesNoUnknown
+    }
+
+
+
+main : Program () Model Msg
+main = Browser.sandbox {init = init, update = update, view = view}
+
+
+
 {-| The init function is just a copy of the model with blank unanswered questions. The mkq helper 
 gives a shortcut to creating an empty question of the right type. -}
 init : Model
-init = Model (mkq alwaysValid) (mkq requireInt) (mkq requireFruit)
+init = 
+    Model 
+        (mkq alwaysValid) 
+        (mkq requireInt) 
+        (mkq requireFruit)
+        (mkq alwaysValid)
+        Unknown
 
 
 requireInt : String -> Valid Int
@@ -70,8 +85,11 @@ myinterview m = Interview
       |> ask askfname 
       |> ask askAge
       |> ask askFruit 
+      |> ask askPizza
     )
     showResults
+
+
 
 
 type Msg = UpdateName String
@@ -80,6 +98,9 @@ type Msg = UpdateName String
          | SaveName
          | SaveAge
          | SaveFruit
+         | ChoosePizza YesNoUnknown
+         | UpdatePizza String
+         | SavePizza 
 
 update : Msg -> Model -> Model
 update msg model = 
@@ -90,6 +111,9 @@ update msg model =
         SaveName -> { model | firstName = completeQuestion model.firstName }
         SaveAge -> { model | age = completeQuestion model.age }
         SaveFruit -> { model | fruit = completeQuestion model.fruit }
+        ChoosePizza ynu ->  { model | pizzaChoice = ynu }
+        UpdatePizza p -> { model | pizza = updateQuestion p model.pizza }
+        SavePizza -> { model | pizza = completeQuestion model.pizza }
 
 
 {-| Attempt to parse the results of the interview from the collected data.
@@ -159,6 +183,39 @@ askFruit model = case model.fruit of
         , text err
         , button [onClick SaveFruit] [text "Continue"]
             ])
+
+{-| Find out if a user wants to record details of pizza. If so, send the user to questions about pizza.
+-}
+askPizza : Model -> Interviewer Model (Html Msg)
+askPizza model = case model.pizzaChoice of 
+    -- ask the pizza question to user.
+    Yes -> (askPizzaDetails model)
+    -- C
+    No -> Continue model 
+    -- ask if want to check pizza.
+    Unknown -> Ask (div []
+        [ text "Do you want some pizza?"
+        , button [onClick (ChoosePizza Yes)] [text "Yes"]
+        , button [onClick (ChoosePizza No)] [text "No"]
+        ])
+
+
+{-| Ask for details of pizza. 
+
+This could be extended as a chain of questions
+-} 
+askPizzaDetails : Model -> Interviewer Model (Html Msg)
+askPizzaDetails model = case model.pizza of 
+    Answered _ _ -> Continue model
+    Unanswered txt f err -> Ask (div [] 
+        [ input [placeholder "pizza deets", value txt, onInput UpdatePizza] []
+        , text err
+        , button [onClick SavePizza] [text "Continue"]
+        ])
+
+
+
+
 
 showResults : Interviewer Model (Html Msg)  -> (Html Msg)
 showResults modelOrView = case modelOrView of

@@ -7,6 +7,15 @@ type Valid a = Valid a
 type Interviewer a b = Continue a
                      | Ask b
 
+{-| The type of the interview to be run. 
+
+To create an Interview, it needs
+
+- the model the interview uses to collect and parse data.
+- An interview function, which is a chain of Interviewers.
+- Some final View that should be shown at the end of the interview.
+
+-}
 type Interview model msg = Interview 
    model 
    ((Interviewer model (Html msg)) -> (Interviewer model (Html msg)))
@@ -20,6 +29,12 @@ runInterview (Interview model questions finalAnswer) =
     |> questions
     |> finalAnswer
 
+
+{-| Helps conduct an interview by binding together interview questins. 
+
+If the previous step decided it wanted to present something to the user (by evaluating to an Ask (Html Msg)), `ask nextQuestion` will skip `nextQuestion` and pass along the previous `Html Msg`. Otherwise it will run `nextQuestion` to give it a chance to `Ask` something or `Continue` through the interview as well. 
+
+-}
 ask : (model -> Interviewer model (Html msg)) -> Interviewer model (Html msg) -> Interviewer model (Html msg)
 ask question modelOrView = 
     case modelOrView of
