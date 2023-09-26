@@ -5,6 +5,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onInput, onClick)
 import Inquisimin exposing (..)
+import Dict
 
 
 
@@ -28,7 +29,6 @@ type alias Results =
 
 type YesNoUnknown = Yes | No | Unknown
 
-
 type alias PizzaResults = 
     { pizzaType : String }
 
@@ -38,6 +38,7 @@ type alias Model =
     , fruit : Question Fruit
     , pizza : Question String
     , pizzaChoice : YesNoUnknown
+    , colors : Collection String
     }
 
 
@@ -57,6 +58,8 @@ init =
         (mkq requireFruit)
         (mkq alwaysValid)
         Unknown
+        (mkCollection alwaysValid)
+
 
 
 requireInt : String -> Valid Int
@@ -86,6 +89,7 @@ myinterview m = Interview
       |> ask askAge
       |> ask askFruit 
       |> ask askPizza
+      |> ask collectColors
     )
     showResults
 
@@ -101,6 +105,9 @@ type Msg = UpdateName String
          | ChoosePizza YesNoUnknown
          | UpdatePizza String
          | SavePizza 
+         | UpdateColor Int String
+         | AddAnotherColor
+         | FinishColors
 
 update : Msg -> Model -> Model
 update msg model = 
@@ -114,7 +121,16 @@ update msg model =
         ChoosePizza ynu ->  { model | pizzaChoice = ynu }
         UpdatePizza p -> { model | pizza = updateQuestion p model.pizza }
         SavePizza -> { model | pizza = completeQuestion model.pizza }
+        UpdateColor idx txt -> { model | colors = updateItemText model.colors idx txt }
+        AddAnotherColor -> { model | colors = addNewColor model.colors }
+        FinishColors -> { model | colors = setComplete model.colors Complete}
 
+addNewColor : Collection String -> Collection String
+addNewColor (Collection complete starter dct) = 
+    let 
+        newId = getNewId (Collection complete starter dct)
+    in
+        Collection complete starter (Dict.insert newId starter dct)
 
 {-| Attempt to parse the results of the interview from the collected data.
 
@@ -143,7 +159,7 @@ view model =
             --[ doInterview model]
             [runInterview (myinterview model)]
             ]
-
+            
 
 displayModelSoFar : Model -> Html msg
 displayModelSoFar model = 
@@ -154,12 +170,38 @@ displayModelSoFar model =
             [ div [] [text "Age:", (text << getQValue) (model.age) ]]
         , div []
             [ div [] [text "Fruit: ",(text << getQValue) model.fruit ]]
-        ]
+        , div []
+            [ div [] [text "Pizza? ",(text << getQValue) model.pizza ]]
+       ]
+
+collectColors : Model -> Interviewer Model (Html Msg)
+collectColors model = case (getComplete model.colors) of
+    Complete -> Continue model
+    Incomplete -> Ask (collectColors_ model)
+
+
+collectColors_ : Model ->  (Html Msg)
+collectColors_ model = div [] (
+    (List.map collectColor (getQuestions model.colors) ++ 
+        [ button [onClick AddAnotherColor] [text "+"]
+        , button [onClick FinishColors] [text "Finish Colors"]
+        ])
+    ) 
+
+collectColor  : (Int, Question String) -> Html Msg
+collectColor (idx, q) = 
+    let 
+        txt = getQValue q
+    in 
+        div []
+            [ text (String.fromInt idx)
+            , input [placeholder "a color", value txt, onInput (UpdateColor idx) ] []
+            ]
 
 
 askfname : Model -> Interviewer Model (Html Msg)
 askfname model = case model.firstName of 
-    Answered _ _ -> Continue model
+    Answered _ _ _ -> Continue model
     Unanswered txt f err  -> Ask (div [] 
         [ input [placeholder "fname", value txt, onInput UpdateName] [] 
         , text err
@@ -168,7 +210,7 @@ askfname model = case model.firstName of
 
 askAge : { a | age : Question b } -> Interviewer { a | age : Question b } (Html Msg)
 askAge model = case model.age of 
-    Answered _ _ -> Continue model
+    Answered _ _ _-> Continue model
     Unanswered txt f err-> Ask (div []
         [ input [placeholder "age", value txt,  onInput UpdateAge] []
         , text err
@@ -177,7 +219,7 @@ askAge model = case model.age of
 
 askFruit : { a | fruit : Question b } -> Interviewer { a | fruit : Question b } (Html Msg)
 askFruit model = case model.fruit of 
-    Answered _ _ -> Continue model
+    Answered _ _ _-> Continue model
     Unanswered txt f err -> Ask (div []
         [ input [placeholder "fruit", value txt, type_ "text", onInput UpdateFruit] []
         , text err
@@ -206,7 +248,7 @@ This could be extended as a chain of questions
 -} 
 askPizzaDetails : Model -> Interviewer Model (Html Msg)
 askPizzaDetails model = case model.pizza of 
-    Answered _ _ -> Continue model
+    Answered _ _ _-> Continue model
     Unanswered txt f err -> Ask (div [] 
         [ input [placeholder "pizza deets", value txt, onInput UpdatePizza] []
         , text err

@@ -42,27 +42,35 @@ requireInt txt = case String.toInt txt of
 myIntQuestion = mkq requireInt
 ```
 
-Each single value in the `Results` type will need a `Question`.
+Each single value in the `Results` type will need a `Question`. You might have `Question`s in the `Model` that aren't needed in `Results` though. 
+
 
 
 
 
 3. The Interview
 
-The interview is a chain of `Model -> Either Model (Html Msg)` functions. Combine them with 
+Create an interview with the `Interview model msg` type. An `Interview` needs three peices. 
+
+First, the Interview needs the model on which it will operate.
+
+Second, it needs the interview to run. An interview is a chain of `Model -> Interviewer Model (Html Msg)` functions. Combine them with 
 `ask `, as in 
 
 ```elm
-Left model 
+Continue model 
 |> ask questionView1
 |> ask questionView2
 ```
 
-Add an `Html Msg` at the end which will always display at the end of the interview.
+Each of these `questionView` functions has type `Model -> Interview Model Msg`.  
+
+You must add an `Html Msg` at the end which will always display at the end of the interview.
+
 
 3.  Branching questions
 
-We can handle branching questions. with the following technique. 
+We can handle branching questions with the following technique. 
 
 If the branch will depend on a user's explicit choice, add a property to the Model that tracks which branch a user is going down. For example 
 
@@ -112,20 +120,52 @@ askPizzaDetails model = case model.pizza of
         , text err
         , button [onClick SavePizza] [text "Continue"]
         ])
-
-
-
-
 ```
 
 
 4. Collecting Lists
 
-To collect a list of values of type `Question a`, 
+To collect a list of values of type `Question a`, add an item of type `Collection a` to your model. This will store a dictionary of `Dict Int (Question a)` values as well as a flag indicating if the list is `Complete` or not.  
 
-5. Showing the questions. 
+`mkCollection` helps create a new collection. Pass it the `String -> Valid a` parser the underlying `Question a` types need.
 
-These 
+Views will use the `Complete` flag to determine if the question should be asked.
+
+```elm
+collectColors : Model -> Interviewer Model (Html Msg)
+collectColors model = case (getComplete model.colors) of
+    Complete -> Continue model
+    Incomplete -> Ask (collectColors_ model)
+```
+
+Then `collectColors_` presents the html to the user. The helper `collectColor` gives a snippet html that can update a single stored `Color` in the model's `Collection`. `collectColors_` renders all the needed one-color snippets and adds buttons for adding more colors or finishing the collection. 
+
+```
+
+collectColors_ : Model ->  (Html Msg)
+collectColors_ model = div [] (
+    (List.map collectColor (getQuestions model.colors) ++ 
+        [ button [onClick AddAnotherColor] [text "+"]
+        , button [onClick FinishColors] [text "Finish Colors"]
+        ])
+    ) 
+
+collectColor  : (Int, Question String) -> Html Msg
+collectColor (idx, q) = 
+    let 
+        txt = getQValue q
+    in 
+        div []
+            [ text (String.fromInt idx)
+            , input [placeholder "a color", value txt, onInput (UpdateColor idx) ] []
+            ]
+
+
+```
+
+5. Displaying the results.
+
+Every Interview needs to end with a 'catchall' view that will always appear. It has the type `Interviewer model (Html msg) -> Html msg)`. You can use this catchall to display the final 'results' of the interview, or to dispatch actions such as network calls to use the interview's data to generate a document.
 
 6. Producing documents. 
 
