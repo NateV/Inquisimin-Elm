@@ -68,7 +68,7 @@ To create an Interview, it needs
 type Interview model msg = Interview 
    model 
    ((Interviewer model (Html msg)) -> (Interviewer model (Html msg)))
-   (Interviewer model (Html msg) -> Html msg)
+   (model -> Html msg)
 
 
 
@@ -76,7 +76,13 @@ runInterview : Interview model msg -> Html msg
 runInterview (Interview model questions finalAnswer) = 
     Continue model
     |> questions
-    |> finalAnswer
+    |> finally finalAnswer
+
+
+finally : (model -> Html msg) -> Interviewer model (Html msg) -> Html msg
+finally lastQuestionView interview = case interview of 
+    Continue mdl -> lastQuestionView mdl
+    Ask aView -> aView
 
 
 {-| Helps conduct an interview by binding together interview questins. 
@@ -103,8 +109,13 @@ type Question a = Answered
 
 getQValue : Question a -> String
 getQValue q = case q of 
-    Answered a orig parser-> orig
-    Unanswered t f reason -> t
+    Answered _ orig _-> orig
+    Unanswered t _  _-> t
+
+getQAnswer : Question a -> Maybe a
+getQAnswer q = case q of
+    Answered a _ _ -> Just a
+    _ -> Nothing
 
 {-| Make an empty Question of type a. 
 
