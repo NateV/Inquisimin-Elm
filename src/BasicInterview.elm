@@ -1,4 +1,4 @@
-module V2 exposing (..)
+module BasicInterview exposing (..)
 
 import Browser
 import Html exposing (..)
@@ -14,6 +14,22 @@ import Dict
 type Fruit = Apple
            | Pear
            | Banana
+
+
+showFruit : Fruit -> String
+showFruit f = case f of 
+    Apple -> "Apple"
+    Pear -> "Pear"
+    Banana -> "Banana"
+
+{-| Read a fruit from a string. Maybe.
+-}
+readFruit : String -> Maybe Fruit
+readFruit frt = case frt of 
+    "Apple" -> Just Apple
+    "Pear" -> Just Pear
+    "Banana" -> Just Banana
+    _ -> Nothing
 
 
 
@@ -72,14 +88,6 @@ requireFruit txt = case readFruit txt of
     Just fruit -> Valid fruit
     Nothing -> Error ("'" ++ txt ++ "' is not the name of an allowed fruit.")
 
-{-| Read a fruit from a string. Maybe.
--}
-readFruit : String -> Maybe Fruit
-readFruit frt = case frt of 
-    "Apple" -> Just Apple
-    "Pear" -> Just Pear
-    "Banana" -> Just Banana
-    _ -> Nothing
 
 myinterview : Model -> Interview Model Msg
 myinterview m = Interview 
@@ -259,9 +267,18 @@ askPizzaDetails model = case model.pizza of
 
 
 
-showResults : Interviewer Model (Html Msg)  -> (Html Msg)
-showResults modelOrView = case modelOrView of
-    Continue model -> (div [] [text "Done."])
-    Ask something -> something
+showResults : Model  -> (Html Msg)
+showResults model = (div [] 
+        ((h3 [] [text "Here are the results."]) :: (showResult_ model)))
+
+
+showResult_ : Model -> List (Html Msg)
+showResult_ model = case (getQAnswer model.firstName, getQAnswer model.fruit, getQAnswer model.age) of 
+    (Just fn, Just fruit, Just age) -> 
+        [ p [] [text fn]
+        , p [] [text << showFruit <| fruit]
+        , p [] [text << String.fromInt <| age]
+        ]
+    _ -> [p [] [text "Model incomplete."]]
 
 
