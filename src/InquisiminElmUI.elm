@@ -1,5 +1,5 @@
-module Inquisimin exposing (..)
-import Html exposing (Html)
+module InquisiminElmUI exposing (..)
+import Element exposing (Element)
 import Dict
 import Element exposing (Element)
 
@@ -68,18 +68,18 @@ To create an Interview, it needs
 -}
 type Interview model msg = Interview 
    model 
-   ((Interviewer model (Html msg)) -> (Interviewer model (Html msg)))
-   (model -> Html msg)
+   ((Interviewer model (Element msg)) -> (Interviewer model (Element msg)))
+   (model -> Element msg)
 
 
-runInterview : Interview model msg -> Html msg
+runInterview : Interview model msg -> Element msg
 runInterview (Interview model questions finalAnswer) = 
     Continue model
     |> questions
     |> finally finalAnswer
 
 
-finally : (model -> Html msg) -> Interviewer model (Html msg) -> Html msg
+finally : (model -> Element msg) -> Interviewer model (Element msg) -> Element msg
 finally lastQuestionView interview = case interview of 
     Continue mdl -> lastQuestionView mdl
     Ask aView -> aView
@@ -87,10 +87,10 @@ finally lastQuestionView interview = case interview of
 
 {-| Helps conduct an interview by binding together interview questins. 
 
-If the previous step decided it wanted to present something to the user (by evaluating to an Ask (Html Msg)), `ask nextQuestion` will skip `nextQuestion` and pass along the previous `Html Msg`. Otherwise it will run `nextQuestion` to give it a chance to `Ask` something or `Continue` through the interview as well. 
+If the previous step decided it wanted to present something to the user (by evaluating to an Ask (Element Msg)), `ask nextQuestion` will skip `nextQuestion` and pass along the previous `Element Msg`. Otherwise it will run `nextQuestion` to give it a chance to `Ask` something or `Continue` through the interview as well. 
 
 -}
-ask : (model -> Interviewer model (Html msg)) -> Interviewer model (Html msg) -> Interviewer model (Html msg)
+ask : (model -> Interviewer model (Element msg)) -> Interviewer model (Element msg) -> Interviewer model (Element msg)
 ask question modelOrView = 
     case modelOrView of
         Continue model -> question model

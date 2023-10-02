@@ -10,7 +10,6 @@ import Dict
 
 
 
-
 type Fruit = Apple
            | Pear
            | Banana
@@ -159,7 +158,7 @@ getResults model =
 -- HTML
 
 view : Model -> Html Msg
-view model =
+view model = 
     div [] [
         div []
             [ displayModelSoFar model ],

@@ -7,6 +7,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onInput, onClick)
 import Inquisimin exposing (..)
+import XFDF exposing (..)
 import File.Download as Download
 
 type alias FormContents = 
@@ -71,6 +72,9 @@ parseFormContents model = case (model.name, model.pet) of
     (Answered name _ _, Answered pet _ _) -> Just <| FormContents name pet
     _ -> Nothing
 
+formContentsToXFDF : FormContents -> XFDF
+formContentsToXFDF fc = XFDF "example.pdf" [XField "Name" fc.name, XField "Pet" fc.pet]
+
 getXFDF : Model -> Maybe String
 getXFDF model = 
     let
@@ -78,20 +82,8 @@ getXFDF model =
     in 
         case formContentsM of 
             Nothing -> Nothing
-            Just formContents -> Just <| String.join "\n" 
-                [ "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-                , "<xfdf xmlns=\"http://ns.adobe.com/xfdf/\">"
-                , "<f href=\"exampleform.pdf\"/>"
-                , "<fields>"
-                , "    <field name=\"Name\">"
-                , "        <value>" ++ formContents.name ++ "</value>"
-                , "    </field>"
-                , "    <field name=\"Pet\">"
-                , "        <value>" ++ formContents.pet ++ "</value>"
-                , "    </field>"
-                , "</fields>"
-                , "</xfdf>"
-               ]
+            Just formContents -> Just << xfdfToString << formContentsToXFDF <| formContents
+
 
 downloadForm model = 
     let 
