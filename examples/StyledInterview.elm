@@ -6,7 +6,7 @@ import Html exposing (Html)
 import Html.Events exposing (onInput, onClick)
 import InquisiminElmUI exposing (..)
 import Dict
-import Element exposing (Element, el, fill, row, text)
+import Element exposing (Element, none, width, el, fill, row, text, spacing, column)
 import Element.Input as I
 import Element.Font as F
 
@@ -90,7 +90,7 @@ requireFruit txt = case readFruit txt of
     Nothing -> Error ("'" ++ txt ++ "' is not the name of an allowed fruit.")
 
 
-myinterview : Model -> Interview Model Msg
+myinterview : Model -> Interview Model (Element Msg) 
 myinterview m = Interview 
     m 
     ( \m_-> m_ 
@@ -160,28 +160,25 @@ getResults model =
 -- HTML
 
 view : Model -> Html Msg
-view model = Element.layout [] <|
-    row [] [
-        row []
-            [ displayModelSoFar model ],
-        row []
-            --[ doInterview model]
-            [runInterview (myinterview model)]
+view model = Element.layout [width fill, Element.explain Debug.todo] <|
+    column [spacing 10, width fill] 
+        [ displayModelSoFar model
+        , row [width fill] 
+            [ el [width fill] none
+            , el [width fill] <| runInterview (myinterview model)
+            , el [width fill] none
             ]
+        ]
             
 
 displayModelSoFar : Model -> Element Msg
 displayModelSoFar model = 
-    row [] 
-        [ row []
-            [ row [] [(text "Name:"),  (text << getQValue) model.firstName]]
-        , row []
-            [ row [] [text "Age:", (text << getQValue) (model.age) ]]
-        , row []
-            [ row [] [text "Fruit: ",(text << getQValue) model.fruit ]]
-        , row []
-            [ row [] [text "Pizza? ",(text << getQValue) model.pizza ]]
-       ]
+    column [width fill] 
+            [ row [width fill] [(text "Name:"),  (text << getQValue) model.firstName]
+            , row [width fill] [text "Age:", (text << getQValue) (model.age) ]
+            , row [width fill] [text "Fruit: ",(text << getQValue) model.fruit ]
+            , row [width fill] [text "Pizza? ",(text << getQValue) model.pizza ]
+            ]
 
 collectColors : Model -> Interviewer Model (Element Msg)
 collectColors model = case (getComplete model.colors) of
@@ -211,8 +208,8 @@ collectColor (idx, q) =
 askfname : Model -> Interviewer Model (Element Msg)
 askfname model = case model.firstName of 
     Answered _ _ _ -> Continue model
-    Unanswered txt _ err  -> Ask (row [] 
-        [ I.text [] {label = I.labelLeft [] (text "First Name"), placeholder= Just <| I.placeholder [] (text "fname"), text=txt, onChange= UpdateName} 
+    Unanswered txt _ err  -> Ask (column [width fill] 
+        [ I.text [width fill] {label = I.labelLeft [] (text "First Name"), placeholder= Just <| I.placeholder [] (text "fname"), text=txt, onChange= UpdateName} 
         , text err
         , I.button [] {onPress =Just SaveName, label= text "Continue"}
         ])
@@ -220,7 +217,7 @@ askfname model = case model.firstName of
 askAge : { a | age : Question b } -> Interviewer { a | age : Question b } (Element Msg)
 askAge model = case model.age of 
     Answered _ _ _-> Continue model
-    Unanswered txt _ err-> Ask (row []
+    Unanswered txt _ err-> Ask (column []
         [ I.text [] {label = I.labelLeft [] (text "Age?"), placeholder =Just <| I.placeholder [] (text "age"), text= txt,  onChange= UpdateAge}
         , text err
         , I.button [] {onPress=Just SaveAge, label= text "Continue"}
@@ -229,8 +226,8 @@ askAge model = case model.age of
 askFruit : { a | fruit : Question b } -> Interviewer { a | fruit : Question b } (Element Msg)
 askFruit model = case model.fruit of 
     Answered _ _ _-> Continue model
-    Unanswered txt _ err -> Ask (row []
-        [ I.text [] {label=I.labelLeft [] (text "Fruit"), placeholder= Just <| I.placeholder [] (text "fruit"), text=txt, onChange= UpdateFruit}
+    Unanswered txt _ err -> Ask (column []
+        [ I.text [width fill] {label=I.labelLeft [] (text "Fruit"), placeholder= Just <| I.placeholder [] (text "fruit"), text=txt, onChange= UpdateFruit}
         , text err
         , I.button [] {onPress=Just SaveFruit, label = text "Continue"} 
         ])
@@ -244,7 +241,7 @@ askPizza model = case model.pizzaChoice of
     -- C
     No -> Continue model 
     -- ask if want to check pizza.
-    Unknown -> Ask (row []
+    Unknown -> Ask (column []
         [ text "Do you want some pizza?"
         , I.button [] {onPress=Just <| ChoosePizza Yes, label = (text "Yes")}
         , I.button [] {onPress=Just <| ChoosePizza No, label=(text "No")}
@@ -258,7 +255,7 @@ This could be extended as a chain of questions
 askPizzaDetails : Model -> Interviewer Model (Element Msg)
 askPizzaDetails model = case model.pizza of 
     Answered _ _ _-> Continue model
-    Unanswered txt _ err -> Ask (row [] 
+    Unanswered txt _ err -> Ask (column [] 
         [ I.text [] {label=I.labelLeft [] (text "Pizza details"), placeholder =Just <| I.placeholder [] (text "pizza deets"), text= txt, onChange= UpdatePizza}
         , text err
         , I.button [] {onPress=Just SavePizza, label = (text "Continue")}        
@@ -270,7 +267,7 @@ askPizzaDetails model = case model.pizza of
 
 showResults : Model  -> (Element Msg)
 showResults model = (row [] 
-        ((el [F.variant F.smallCaps] (text "Here are the results.")) :: (showResult_ model)))
+        ((row [F.variant F.smallCaps] [text "Here are the results."]) :: (showResult_ model)))
 
 
 showResult_ : Model -> List (Element Msg)

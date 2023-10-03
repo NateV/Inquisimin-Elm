@@ -66,20 +66,20 @@ To create an Interview, it needs
 - Some final View that should be shown at the end of the interview.
 
 -}
-type Interview model msg = Interview 
+type Interview model viewtype = Interview 
    model 
-   ((Interviewer model (Element msg)) -> (Interviewer model (Element msg)))
-   (model -> Element msg)
+   ((Interviewer model viewtype) -> (Interviewer model viewtype))
+   (model -> viewtype)
 
 
-runInterview : Interview model msg -> Element msg
+runInterview : Interview model vt -> vt
 runInterview (Interview model questions finalAnswer) = 
     Continue model
     |> questions
     |> finally finalAnswer
 
 
-finally : (model -> Element msg) -> Interviewer model (Element msg) -> Element msg
+finally : (model -> vt) -> Interviewer model vt -> vt
 finally lastQuestionView interview = case interview of 
     Continue mdl -> lastQuestionView mdl
     Ask aView -> aView
@@ -90,7 +90,7 @@ finally lastQuestionView interview = case interview of
 If the previous step decided it wanted to present something to the user (by evaluating to an Ask (Element Msg)), `ask nextQuestion` will skip `nextQuestion` and pass along the previous `Element Msg`. Otherwise it will run `nextQuestion` to give it a chance to `Ask` something or `Continue` through the interview as well. 
 
 -}
-ask : (model -> Interviewer model (Element msg)) -> Interviewer model (Element msg) -> Interviewer model (Element msg)
+ask : (model -> Interviewer model vt) -> Interviewer model vt -> Interviewer model vt
 ask question modelOrView = 
     case modelOrView of
         Continue model -> question model
