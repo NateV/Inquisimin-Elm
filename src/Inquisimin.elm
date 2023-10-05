@@ -1,7 +1,5 @@
 module Inquisimin exposing (..)
-import Html exposing (Html)
 import Dict
-import Element exposing (Element)
 
 type Valid a = Valid a
              | Error String
@@ -66,20 +64,20 @@ To create an Interview, it needs
 - Some final View that should be shown at the end of the interview.
 
 -}
-type Interview model msg = Interview 
+type Interview model viewtype = Interview 
    model 
-   ((Interviewer model (Html msg)) -> (Interviewer model (Html msg)))
-   (model -> Html msg)
+   ((Interviewer model viewtype) -> (Interviewer model viewtype))
+   (model -> viewtype)
 
 
-runInterview : Interview model msg -> Html msg
+runInterview : Interview model vt -> vt
 runInterview (Interview model questions finalAnswer) = 
     Continue model
     |> questions
     |> finally finalAnswer
 
 
-finally : (model -> Html msg) -> Interviewer model (Html msg) -> Html msg
+finally : (model -> vt) -> Interviewer model vt -> vt
 finally lastQuestionView interview = case interview of 
     Continue mdl -> lastQuestionView mdl
     Ask aView -> aView
@@ -90,7 +88,7 @@ finally lastQuestionView interview = case interview of
 If the previous step decided it wanted to present something to the user (by evaluating to an Ask (Html Msg)), `ask nextQuestion` will skip `nextQuestion` and pass along the previous `Html Msg`. Otherwise it will run `nextQuestion` to give it a chance to `Ask` something or `Continue` through the interview as well. 
 
 -}
-ask : (model -> Interviewer model (Html msg)) -> Interviewer model (Html msg) -> Interviewer model (Html msg)
+ask : (model -> Interviewer model vt) -> Interviewer model vt -> Interviewer model vt
 ask question modelOrView = 
     case modelOrView of
         Continue model -> question model
@@ -143,11 +141,11 @@ NB Trying to update the text of an Answered question does nothing.
 updateQuestion : String -> Question a -> Question a
 updateQuestion str q = case q of 
     Answered a txt parser -> Answered a txt parser
-    Unanswered txt f err -> Unanswered str f err
+    Unanswered _ f err -> Unanswered str f err
 
 unanswer : Question a -> Question a
 unanswer q = case q of 
-    Answered a original parser -> Unanswered original parser ""
+    Answered _ original parser -> Unanswered original parser ""
     u -> u 
 
 alwaysValid : String -> Valid String 
@@ -158,8 +156,8 @@ alwaysValid txt = Valid txt
 -}
 getAnswer : Question a -> Maybe a
 getAnswer q = case q of 
-    Answered a original parser -> Just a
-    Unanswered txt parser err -> case parser txt of 
+    Answered a _ _ -> Just a
+    Unanswered txt parser _ -> case parser txt of 
         Valid a -> Just a
-        Error reason -> Nothing
+        Error _ -> Nothing
 

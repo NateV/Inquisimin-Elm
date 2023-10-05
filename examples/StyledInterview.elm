@@ -4,7 +4,7 @@ import Browser
 import Html exposing (Html)
 --import Html.Attributes exposing (..)
 import Html.Events exposing (onInput, onClick)
-import InquisiminElmUI exposing (..)
+import Inquisimin exposing (..)
 import Dict
 import Element exposing (Element, none, width, el, fill, row, text, spacing, column)
 import Element.Input as I
