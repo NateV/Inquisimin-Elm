@@ -88,7 +88,7 @@ requireFruit txt = case readFruit txt of
     Nothing -> Error ("'" ++ txt ++ "' is not the name of an allowed fruit.")
 
 
-myinterview : Model -> Interview Model Msg
+myinterview : Model -> Interview Model (Html Msg)
 myinterview m = Interview 
     m 
     ( \m_-> m_ 
