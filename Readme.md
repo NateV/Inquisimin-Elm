@@ -3,11 +3,58 @@
 
 Minimal guided interviews with Elm. 
 
-There are lots of great tools for setting up guided interviews. Often these tools come with a lot of other great features too. Sometimes I don't want all those other features. Instead I just want a guided interview that runs in the browser. It asks some questions, collects some data, and shows something to the user based on the user's data. Thats it. Inquisimin aims to help with that limited task. If you need more features, you can use Inquisimin to collect data that you then send to some other tool.
+There are lots of great tools for setting up guided interviews. Often these tools come with a lot of other great features too. Sometimes I don't want all those other features. Instead, I just want a guided interview that runs in the browser. It asks some questions, collects some data, and shows something to the user based on the user's data. Thats it. 
+
+Inquisimin aims to help with this limited task. If you need more features, you can use Inquisimin to collect data that you then send to some other tool. Inquisimin handles only the guided interview, and you can plug it into more complicated applications however you like. 
 
 
-## Getting Started
-Inquisimin-Elm provides tools for creating minimal guided interviews in an Elm application. To start a guided interview, start with a new Elm project. 
+## Getting Started with a DictModel Interview
+
+The `DictModel.elm` module provides helpers for creating a very simple interview quickly. We need three things: 
+1. A `main` function, like in any other Elm app.
+
+2. Fuctions that define the questions we want to ask the user.
+
+3. An `interview` that desribes how these questions should get asked. 
+
+DictModel interviews have lots of limitations. DictModel interviews have to be linear - they cannot take users down different paths depending on their answers. If you are using the helpers for making questions for users, these views will all create HTML views, so you cannot use Elm-UI instead. These interviews also do not currently support input validation. If these restrictions don't work for you, you'll need to go beyond `DictModel` interviews. We'll see in this section how `DictModel` interviews work, and then we'll see how to go beyond them in the next section.  
+
+
+In a DictModel interview, the `main` function is an ordinary `main` Elm function. The initial model is an empty Dictionary. The `update` method is `updateDictModel` from `DictModel.elm`. The view is `mkDictModelInterviewView`, also from `DictModel.Elm`. It needs the `interview`, so we'll define that next.
+
+Here is an example `main` function that will run in Elm's browser sandbox. If you want to run the interview in `Browser.element` or another Program with side effects, modify your main function to hande those effects outside of the interview. 
+
+TODO provide an example with `Browser.element`
+
+```elm
+main : Program () Model Msg
+main = Browser.sandbox 
+    { init = Dict.empty
+    , update = updateDictModel
+    , view = mkDictModelInterviewView interview
+    }
+```
+
+Next, we will use helpers from `DictModel.elm` to make the questions our interview will present to users. We'll use `mkTextQuestionView` for this purpose. This function needs a string key to identify this question in the interview's model, and a friendly label to present the question to the user.
+
+```elm
+askfname : Model -> Interviewer (Model) (Html Msg) 
+askfname model = mkTextQuestionView "firstname"  "First Name" model
+```
+
+You can write these functions in point-free style to be extra concise:
+
+```elm
+cattype : Model -> Interviewer (Model) (Html Msg)
+cattype = mkTextQuestionView "cattype" "Cat Type"
+```
+
+Finally, the last piece of our `DictModel` interivew is the `interview` function itself. 
+
+
+
+## Complexity beyond what DictModel can handle
+
 
 1. Model. 
 
