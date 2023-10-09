@@ -36,7 +36,7 @@ TODO provide an example with `Browser.element`
 ```elm
 main : Program () Model Msg
 main = Browser.sandbox 
-    { init = Dict.empty
+    { init = mkDictModel 
     , update = updateDictModel
     , view = mkDictModelInterviewView interview
     }
