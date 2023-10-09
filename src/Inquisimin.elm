@@ -70,6 +70,7 @@ type Interview model viewtype = Interview
    (model -> viewtype)
 
 
+{-| Run an interview and retrive the value of `vt`, which is probably an Html Msg or Element Msg.-}
 runInterview : Interview model vt -> vt
 runInterview (Interview model questions finalAnswer) = 
     Continue model

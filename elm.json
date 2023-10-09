@@ -11,6 +11,7 @@
             "elm/core": "1.0.5",
             "elm/file": "1.0.5",
             "elm/html": "1.0.0",
+            "j-maas/elm-ordered-containers": "1.0.0",
             "mdgriffith/elm-ui": "1.1.8"
         },
         "indirect": {
@@ -22,7 +23,11 @@
         }
     },
     "test-dependencies": {
-        "direct": {},
-        "indirect": {}
+        "direct": {
+            "elm-explorations/test": "2.1.1"
+        },
+        "indirect": {
+            "elm/random": "1.0.0"
+        }
     }
 }
