@@ -1,4 +1,4 @@
-module BasicInterview exposing (..)
+module CustomViewsInterview exposing (..)
 
 import Browser
 import Html exposing (..)
@@ -7,7 +7,10 @@ import Html.Events exposing (onInput, onClick)
 import Inquisimin exposing (..)
 import Dict
 
+{-| An interview that demonstrates how to use a custom Model type, custom views, and non-linear interview paths like collections of values and branching paths. 
 
+
+-}
 
 
 type Fruit = Apple

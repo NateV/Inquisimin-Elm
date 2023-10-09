@@ -7,7 +7,7 @@ import Html.Attributes exposing (..)
 import Inquisimin exposing (..)
 import Dict
 
-
+{-| An Interview demonstrating the DictModel pattern and using DictModel related helpers for making user views. This is the simplest way to make an interview with Inquisimin, and also the most constrained. -}
 
 main : Program () Model Msg
 main = Browser.sandbox 
