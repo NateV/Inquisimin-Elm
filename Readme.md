@@ -2,6 +2,8 @@
 
 **Early, early days of an experiment; a small plant I plan to grow slowly. Feedback welcomed**
 
+[<img alt="alt_text" width="40px" src="Inquisimin Logo.png" />](https://github.com/NateV/Inquisimin-Elm)
+
 Minimal guided interviews with Elm. 
 
 There are lots of great tools for setting up guided interviews. Often these tools come with a lot of other great features too. Sometimes I don't want all those other features. Instead, I just want a guided interview that runs in the browser. It asks some questions, collects some data, and shows something to the user based on the user's data. Thats it. 
