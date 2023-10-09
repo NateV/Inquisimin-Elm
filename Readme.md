@@ -270,11 +270,9 @@ collectColor (idx, q) =
 
 5. Revisiting questions.
 
-To revisit a question, you could have a view that lists all the `Answered` members of the `Model`, along with a button. A click on the button will set the question to `Unaswered`, so it's QuestionView will be presented to the user again.  
+Currently, we can 'go back' to questions in a DictModel interview. The DictModel has a 'Go Back' message that will return the user to the previously answered question. 
 
-This may behave oddly when questions depend on each other, as in branching paths or collections, and needs more thought.
-
-TODO create an example to demonstrate this.
+There is not currently a method for doing that if you're not using a DictModel interview. Non-dict-model interviews also do not have unique String names for questions. Its making me wonder if the DictModel should be the only way to track state in inquisimin.
 
 6. Displaying the results.
 
