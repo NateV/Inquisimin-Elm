@@ -51,6 +51,11 @@ type alias PizzaResults =
     { pizzaType : String }
 
 type alias Model = 
+    { interviewState : InterviewState
+    , history : List InterviewState
+    }
+
+type alias InterviewState = 
     { firstName : Question String
     , age : Question Int
     , fruit : Question Fruit
@@ -71,12 +76,14 @@ gives a shortcut to creating an empty question of the right type. -}
 init : Model
 init = 
     Model 
-        (mkq alwaysValid) 
-        (mkq requireInt) 
-        (mkq requireFruit)
-        (mkq alwaysValid)
-        Unknown
-        (mkCollection alwaysValid)
+        (InterviewState 
+            (mkq alwaysValid) 
+            (mkq requireInt) 
+            (mkq requireFruit)
+            (mkq alwaysValid)
+            Unknown
+            (mkCollection alwaysValid))
+        []
 
 
 
@@ -121,19 +128,22 @@ type Msg = UpdateName String
 
 update : Msg -> Model -> Model
 update msg model = 
-    case msg of
-        UpdateName n -> { model | firstName = updateQuestion n model.firstName }
-        UpdateAge a -> { model | age = updateQuestion a model.age }
-        UpdateFruit f -> { model | fruit = updateQuestion f model.fruit }
-        SaveName -> { model | firstName = completeQuestion model.firstName }
-        SaveAge -> { model | age = completeQuestion model.age }
-        SaveFruit -> { model | fruit = completeQuestion model.fruit }
-        ChoosePizza ynu ->  { model | pizzaChoice = ynu }
-        UpdatePizza p -> { model | pizza = updateQuestion p model.pizza }
-        SavePizza -> { model | pizza = completeQuestion model.pizza }
-        UpdateColor idx txt -> { model | colors = updateItemText model.colors idx txt }
-        AddAnotherColor -> { model | colors = addNewColor model.colors }
-        FinishColors -> { model | colors = setComplete model.colors Complete}
+    let 
+        interviewState = model.interviewState
+    in 
+        case msg of
+            UpdateName n -> { model | interviewState = { interviewState | firstName = updateQuestion n interviewState.firstName }}
+            UpdateAge a -> { model | age = updateQuestion a model.age }
+            UpdateFruit f -> { model | fruit = updateQuestion f model.fruit }
+            SaveName -> { model | firstName = completeQuestion model.firstName }
+            SaveAge -> { model | age = completeQuestion model.age }
+            SaveFruit -> { model | fruit = completeQuestion model.fruit }
+            ChoosePizza ynu ->  { model | pizzaChoice = ynu }
+            UpdatePizza p -> { model | pizza = updateQuestion p model.pizza }
+            SavePizza -> { model | pizza = completeQuestion model.pizza }
+            UpdateColor idx txt -> { model | colors = updateItemText model.colors idx txt }
+            AddAnotherColor -> { model | colors = addNewColor model.colors }
+            FinishColors -> { model | colors = setComplete model.colors Complete}
 
 addNewColor : Collection String -> Collection String
 addNewColor (Collection complete starter dct) = 

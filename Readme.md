@@ -2,6 +2,9 @@
 
 **Early, early days of an experiment; a small plant I plan to grow slowly. Feedback welcomed**
 
+
+Currently broken, because I'm giving non-DictModel interviews the ability to track history. Should I just do the kind of brutal insertion of `model.interViewState` everywhere, or should ... `ask` know to just pass the `model.interviewState` to QuestionViews instead of passing the whole model? If I do that, I need to fix DictModel's which don't work like that. Should they, or should there be separate `ask` functions for DictModel interviews and TypedModel interviews? 
+
 [<img alt="alt_text" width="100px" src="Inquismin Logo.png" />](https://github.com/NateV/Inquisimin-Elm)
 
 Minimal guided interviews with Elm. 
@@ -92,7 +95,7 @@ This function describes the steps of the interview. First the interview will ask
 Now we've got everything we need for a simple guided interview running in the browser. We'll ask a series of questions to the user and present them with the results. From there, other parts of an application can do something else with that collected data.
 
 
-## Complexity beyond what DictModel can handle
+## Complexity beyond what DictModel can handle: TypedModel Interviews
 
 Its likely you may want to do more than DictModel can manage. You may want to style your interview differently, introduce branching pathways, or ask users for multiple instances of some items (e.g, a list of their favorite foods). We'll say goodbye to DictModel now, and see how we can use Inquisimin for a more customized guided interview.
 
