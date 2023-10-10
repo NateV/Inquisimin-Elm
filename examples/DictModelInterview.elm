@@ -24,6 +24,7 @@ interview m = Interview m
         |> ask cattype)
     displayDictModel 
 
+
 askfname : Model -> Interviewer (Model) (Html Msg) 
 askfname model = mkTextQuestionView "firstname"  "First Name" model
 

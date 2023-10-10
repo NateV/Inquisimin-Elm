@@ -48,6 +48,10 @@ previousQuestion model =
         [] -> Nothing
         first::_ -> Just first
 
+lookupQuestion : String -> Model -> Maybe (Question String)
+lookupQuestion key model = ODict.get key model
+
+
 {-| Display the current value of a DictModel 
 
 -}
@@ -90,20 +94,31 @@ mkTextQuestionView key label model =
         -- find q in the model or make a new one
         qM = ODict.get key model
         q = case qM of 
-            Nothing -> mkq alwaysValid
-            Just some_q -> some_q 
+                Nothing -> mkq alwaysValid
+                Just some_q -> some_q 
     in 
-        
+        case q of
+        Answered _ _ _ -> Continue model
+        Unanswered txt _ err -> Ask (div []
+            [ Html.label [] [text label] 
+            , input [placeholder label, value txt,  onInput (UpdateQuestion key)] []
+            , text err
+            , button [onClick (SaveQuestion key txt)] [text "Continue"]
+            , button [onClick (GoBack)] [text "Go back"]
+                ])
+    
 
-    case q of
-    Answered _ _ _ -> Continue model
-    Unanswered txt _ err -> Ask (div []
-        [ Html.label [] [text label] 
-        , input [placeholder label, value txt,  onInput (UpdateQuestion key)] []
-        , text err
-        , button [onClick (SaveQuestion key txt)] [text "Continue"]
-        , button [onClick (GoBack)] [text "Go back"]
-            ])
 
+{-| Helps check which branch of a branching path to go down.
+
+  Check if a value has been collected with the key `key`. Then if that value is validly parsed by 
+  the reader function (if only we could infer instances of Read, amiright?), return the value wrapped in a Maybe type. Or return Nothing, to indictate the interview still needs to collect the information about which branch to go down. 
+
+-}
+checkChoice : (String -> Maybe a) -> String -> Model -> Maybe a
+checkChoice reader key model = 
+    lookupQuestion key model
+    |> Maybe.andThen getQAnswer
+    |> Maybe.andThen reader
 
 

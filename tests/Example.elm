@@ -84,6 +84,5 @@ suite = describe "DictModel Interviews"
                 Query.fromHtml firstview
                 |> Query.has [text "First Name"]
 
-
            
     ]
