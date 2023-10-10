@@ -8,12 +8,16 @@ Minimal guided interviews with Elm.
 
 There are lots of great tools for setting up guided interviews. Often these tools come with a lot of other great features too. Sometimes I don't want all those other features. Instead, I just want a guided interview that runs in the browser. It asks some questions, collects some data, and shows something to the user based on the user's data. Thats it. 
 
-Inquisimin aims to help with this limited task. If you need more features, you can use Inquisimin to collect data that you then send to some other tool. Inquisimin handles only the guided interview, and you can plug it into more complicated applications however you like. 
+Inquisimin aims to help with this limited task. If you need more features, you can use Inquisimin to collect data that you then send to some other tool. Inquisimin only helps with the guided interview, and you can plug it into more complicated applications however you like. 
+
 
 
 ## New to Elm?
 
-Inquisimin is a library to help write guided interivews in the Elm language. If you are new to Elm, I recommend visiting the [Elm Introduction](https://guide.elm-lang.org/)
+Inquisimin is a library to help write guided interivews in the Elm language. One of its goals is to _not_ be an all-inclusive platform for guided interviews. Instead it provides a handful of functions and patterns for making it easier to add guided interviews to a regular Elm application. You can pick and choose among these, and you can fit them into a larger application if you like.
+
+A consequence of this goal is that using Inquisimin requires installing Elm and learning at the least some basics about how to use it. If you are new to Elm, I recommend visiting the [Elm Introduction](https://guide.elm-lang.org/)
+
 
 ## Getting Started with a DictModel Interview
 
