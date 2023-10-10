@@ -9,6 +9,7 @@ import Dict
 
 {-| An interview that demonstrates how to use a custom Model type, custom views, and non-linear interview paths like collections of values and branching paths. 
 
+This interview also demonstrates how to store History in an interview, so that the interview can go 'back' to previous questions.
 
 -}
 
@@ -125,6 +126,7 @@ type Msg = UpdateName String
          | UpdateColor Int String
          | AddAnotherColor
          | FinishColors
+         | GoBack
 
 update : Msg -> Model -> Model
 update msg model = 
@@ -133,17 +135,23 @@ update msg model =
     in 
         case msg of
             UpdateName n -> { model | interviewState = { interviewState | firstName = updateQuestion n interviewState.firstName }}
-            UpdateAge a -> { model | age = updateQuestion a model.age }
-            UpdateFruit f -> { model | fruit = updateQuestion f model.fruit }
-            SaveName -> { model | firstName = completeQuestion model.firstName }
-            SaveAge -> { model | age = completeQuestion model.age }
-            SaveFruit -> { model | fruit = completeQuestion model.fruit }
-            ChoosePizza ynu ->  { model | pizzaChoice = ynu }
-            UpdatePizza p -> { model | pizza = updateQuestion p model.pizza }
-            SavePizza -> { model | pizza = completeQuestion model.pizza }
-            UpdateColor idx txt -> { model | colors = updateItemText model.colors idx txt }
-            AddAnotherColor -> { model | colors = addNewColor model.colors }
-            FinishColors -> { model | colors = setComplete model.colors Complete}
+            UpdateAge a -> { model | interviewState = { interviewState | age = updateQuestion a interviewState.age }}
+            UpdateFruit f -> { model | interviewState = { interviewState | fruit = updateQuestion f interviewState.fruit }}
+            SaveName -> { model | interviewState = { interviewState | firstName = completeQuestion interviewState.firstName }, history = model.interviewState :: model.history}
+            SaveAge -> { model | interviewState = { interviewState | age = completeQuestion interviewState.age }, history = model.interviewState :: model.history}
+            SaveFruit -> { model | interviewState = { interviewState | fruit = completeQuestion interviewState.fruit }, history = model.interviewState :: model.history}
+            ChoosePizza ynu ->  { model | interviewState = { interviewState | pizzaChoice = ynu }, history = model.interviewState :: model.history}
+            UpdatePizza p -> { model | interviewState = { interviewState | pizza = updateQuestion p interviewState.pizza }}
+            SavePizza -> { model | interviewState = { interviewState | pizza = completeQuestion interviewState.pizza }, history = model.interviewState :: model.history}
+            UpdateColor idx txt -> { model | interviewState = { interviewState | colors = updateItemText interviewState.colors idx txt }}
+            AddAnotherColor -> { model | interviewState = { interviewState | colors = addNewColor interviewState.colors }}
+            FinishColors -> { model | interviewState = { interviewState | colors = setComplete interviewState.colors Complete}, history = model.interviewState :: model.history}
+            GoBack -> goBack model
+
+goBack : Model -> Model
+goBack { interviewState, history } = case history of 
+    [] -> Model interviewState history
+    prev::rest -> Model prev rest
 
 addNewColor : Collection String -> Collection String
 addNewColor (Collection complete starter dct) = 
@@ -158,9 +166,9 @@ addNewColor (Collection complete starter dct) =
 getResults : Model -> Maybe Results
 getResults model = 
     let 
-        fnameM = getAnswer model.firstName
-        ageM = getAnswer model.age
-        fruitM = getAnswer model.fruit
+        fnameM = getAnswer model.interviewState.firstName
+        ageM = getAnswer model.interviewState.age
+        fruitM = getAnswer model.interviewState.fruit
     in
         case (fnameM, ageM, fruitM) of 
             (Just fname, Just age, Just fruit) -> Just (Results fname age fruit)
@@ -178,6 +186,7 @@ view model =
         div []
             --[ doInterview model]
             [runInterview (myinterview model)]
+            , button [onClick GoBack] [text "Go back"]
             ]
             
 
@@ -185,24 +194,24 @@ displayModelSoFar : Model -> Html msg
 displayModelSoFar model = 
     div [] 
         [ div []
-            [ div [] [(text "Name:"),  (text << getQValue) model.firstName]]
+            [ div [] [(text "Name:"),  (text << getQValue) model.interviewState.firstName]]
         , div []
-            [ div [] [text "Age:", (text << getQValue) (model.age) ]]
+            [ div [] [text "Age:", (text << getQValue) (model.interviewState.age) ]]
         , div []
-            [ div [] [text "Fruit: ",(text << getQValue) model.fruit ]]
+            [ div [] [text "Fruit: ",(text << getQValue) model.interviewState.fruit ]]
         , div []
-            [ div [] [text "Pizza? ",(text << getQValue) model.pizza ]]
+            [ div [] [text "Pizza? ",(text << getQValue) model.interviewState.pizza ]]
        ]
 
 collectColors : Model -> Interviewer Model (Html Msg)
-collectColors model = case (getComplete model.colors) of
+collectColors model = case (getComplete model.interviewState.colors) of
     Complete -> Continue model
     Incomplete -> Ask (collectColors_ model)
 
 
 collectColors_ : Model ->  (Html Msg)
 collectColors_ model = div [] (
-    (List.map collectColor (getQuestions model.colors) ++ 
+    (List.map collectColor (getQuestions model.interviewState.colors) ++ 
         [ button [onClick AddAnotherColor] [text "+"]
         , button [onClick FinishColors] [text "Finish Colors"]
         ])
@@ -220,28 +229,31 @@ collectColor (idx, q) =
 
 
 askfname : Model -> Interviewer Model (Html Msg)
-askfname model = case model.firstName of 
+askfname model = case model.interviewState.firstName of 
     Answered _ _ _ -> Continue model
-    Unanswered txt f err  -> Ask (div [] 
-        [ input [placeholder "fname", value txt, onInput UpdateName] [] 
+    Unanswered txt _ err  -> Ask (div [] 
+        [ text "Name?"
+        , input [placeholder "fname", value txt, onInput UpdateName] [] 
         , text err
         , button [onClick SaveName] [text "Continue"]
         ])
 
-askAge : { a | age : Question b } -> Interviewer { a | age : Question b } (Html Msg)
-askAge model = case model.age of 
+askAge : Model -> Interviewer Model (Html Msg)
+askAge model = case model.interviewState.age of 
     Answered _ _ _-> Continue model
-    Unanswered txt f err-> Ask (div []
-        [ input [placeholder "age", value txt,  onInput UpdateAge] []
+    Unanswered txt _ err-> Ask (div []
+        [ text "Age?"
+        , input [placeholder "age", value txt,  onInput UpdateAge] []
         , text err
         , button [onClick SaveAge] [text "Continue"]
             ])
 
-askFruit : { a | fruit : Question b } -> Interviewer { a | fruit : Question b } (Html Msg)
-askFruit model = case model.fruit of 
+askFruit : Model -> Interviewer Model (Html Msg)
+askFruit model = case model.interviewState.fruit of 
     Answered _ _ _-> Continue model
-    Unanswered txt f err -> Ask (div []
-        [ input [placeholder "fruit", value txt, type_ "text", onInput UpdateFruit] []
+    Unanswered txt _ err -> Ask (div []
+        [ text "A fruit?"
+        , input [placeholder "fruit", value txt, type_ "text", onInput UpdateFruit] []
         , text err
         , button [onClick SaveFruit] [text "Continue"]
             ])
@@ -249,7 +261,7 @@ askFruit model = case model.fruit of
 {-| Find out if a user wants to record details of pizza. If so, send the user to questions about pizza.
 -}
 askPizza : Model -> Interviewer Model (Html Msg)
-askPizza model = case model.pizzaChoice of 
+askPizza model = case model.interviewState.pizzaChoice of 
     -- ask the pizza question to user.
     Yes -> (askPizzaDetails model)
     -- C
@@ -267,9 +279,9 @@ askPizza model = case model.pizzaChoice of
 This could be extended as a chain of questions
 -} 
 askPizzaDetails : Model -> Interviewer Model (Html Msg)
-askPizzaDetails model = case model.pizza of 
+askPizzaDetails model = case model.interviewState.pizza of 
     Answered _ _ _-> Continue model
-    Unanswered txt f err -> Ask (div [] 
+    Unanswered txt _ err -> Ask (div [] 
         [ input [placeholder "pizza deets", value txt, onInput UpdatePizza] []
         , text err
         , button [onClick SavePizza] [text "Continue"]
@@ -285,7 +297,7 @@ showResults model = (div []
 
 
 showResult_ : Model -> List (Html Msg)
-showResult_ model = case (getQAnswer model.firstName, getQAnswer model.fruit, getQAnswer model.age) of 
+showResult_ model = case (getQAnswer model.interviewState.firstName, getQAnswer model.interviewState.fruit, getQAnswer model.interviewState.age) of 
     (Just fn, Just fruit, Just age) -> 
         [ p [] [text fn]
         , p [] [text << showFruit <| fruit]

@@ -279,7 +279,8 @@ collectColor (idx, q) =
 
 Currently, we can 'go back' to questions in a DictModel interview. The DictModel has a 'Go Back' message that will return the user to the previously answered question. 
 
-There is not currently a method for doing that if you're not using a DictModel interview. Non-dict-model interviews also do not have unique String names for questions. Its making me wonder if the DictModel should be the only way to track state in inquisimin.
+You can add 'going back' into a TypedModel interview too. The example [examples/CustomViewsInterview.elm](CustomViewsInterview) demonstrates one way to do it. The `Model` in that interview has two members. The `interviewState` is the current state of the interview. This is what the `Model` in an interview without history would be. The second member of the `Model` is called `history`. When questions in this interview are 'completed' by a `Save` message, the last interview state is saved into the history of the whole interview. Then when `update` receives a `GoBack` `Msg`, `update` returns a model with the last version of the history as the new current interview state. This effectively 'undoes' the last question the user answered. (There is a pecadillo that is unresolved with this technique -- invalid form entries that can't be saved will still have their state stored in the history) 
+
 
 6. Displaying the results.
 

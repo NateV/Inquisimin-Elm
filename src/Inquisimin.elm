@@ -77,7 +77,13 @@ runInterview (Interview model questions finalAnswer) =
     |> questions
     |> finally finalAnswer
 
+{-| Run the last step of the interview. Guaranteed to produce a 
+value of whatever the viewtype is. 
 
+This is in contrast to the regular interview questionviews that might 
+produce the Model or a QuestionView (wrapped in the `Interviewer model vt` type
+
+-}
 finally : (model -> vt) -> Interviewer model vt -> vt
 finally lastQuestionView interview = case interview of 
     Continue mdl -> lastQuestionView mdl
@@ -126,6 +132,10 @@ You probably don't need to tell Elm what the type a is.
 mkq : (String -> Valid a) -> Question a
 mkq f = Unanswered "" f ""
 
+{-| If a question has valid input, mark it completed and store the valid answer.
+Otherwise note the error.
+
+-}
 completeQuestion : Question a -> Question a
 completeQuestion q = case q of 
     Unanswered txt f _ -> case f txt of 
@@ -144,11 +154,16 @@ updateQuestion str q = case q of
     Answered a txt parser -> Answered a txt parser
     Unanswered _ f err -> Unanswered str f err
 
+{-| Make an 'Answered' Question Unanswered again. Useful when revisiting a question.-}
 unanswer : Question a -> Question a
 unanswer q = case q of 
     Answered _ original parser -> Unanswered original parser ""
     u -> u 
 
+{-| Question parser/validator that always validates. 
+
+Consequently only works for Question String types.
+-}
 alwaysValid : String -> Valid String 
 alwaysValid txt = Valid txt
 
