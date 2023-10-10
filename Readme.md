@@ -2,9 +2,6 @@
 
 **Early, early days of an experiment; a small plant I plan to grow slowly. Feedback welcomed**
 
-
-Currently broken, because I'm giving non-DictModel interviews the ability to track history. Should I just do the kind of brutal insertion of `model.interViewState` everywhere, or should ... `ask` know to just pass the `model.interviewState` to QuestionViews instead of passing the whole model? If I do that, I need to fix DictModel's which don't work like that. Should they, or should there be separate `ask` functions for DictModel interviews and TypedModel interviews? 
-
 [<img alt="alt_text" width="100px" src="Inquismin Logo.png" />](https://github.com/NateV/Inquisimin-Elm)
 
 Minimal guided interviews with Elm. 
