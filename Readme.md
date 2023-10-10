@@ -2,7 +2,7 @@
 
 **Early, early days of an experiment; a small plant I plan to grow slowly. Feedback welcomed**
 
-[<img alt="alt_text" width="100px" src="Inquismin Logo.png" />](https://github.com/NateV/Inquisimin-Elm)
+[<img alt="alt_text" width="100px" src="Inquismin Logo.png" align="right"/>](https://github.com/NateV/Inquisimin-Elm)
 
 Minimal guided interviews with Elm. 
 
