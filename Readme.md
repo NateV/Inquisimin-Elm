@@ -39,7 +39,7 @@ Here is an example `main` function that will run in Elm's browser sandbox. If yo
 
 
 ```elm
-main : Program () Model Msg
+main : Program () DictModel Msg
 main = Browser.sandbox 
     { init = mkDictModel 
     , update = updateDictModel
@@ -50,14 +50,14 @@ main = Browser.sandbox
 Next, we will use helpers from `DictModel.elm` to make the questions our interview will present to users. We'll use `mkTextQuestionView` for this purpose. This function needs a string key to identify this question in the interview's model, and a friendly label to present the question to the user.
 
 ```elm
-fname : Model -> Interviewer (Model) (Html Msg) 
+fname : DictModel -> Interviewer DictModel (Html Msg) 
 fname model = mkTextQuestionView "firstname"  "First Name" model
 ```
 
 You can write these functions in point-free style to be extra concise:
 
 ```elm
-cattype : Model -> Interviewer (Model) (Html Msg)
+cattype : DictModel -> Interviewer DictModel (Html Msg)
 cattype = mkTextQuestionView "cattype" "Cat Type"
 ```
 
@@ -70,7 +70,7 @@ Finally, the last piece of our `DictModel` interivew is the `interview` function
 This might look like
 
 ```elm
-interview : Model -> Interview Model (Html Msg)
+interview : DictModel -> Interview DictModel (Html Msg)
 interview m = Interview m
     (\m_ -> m_
         |> ask askfname
@@ -78,7 +78,7 @@ interview m = Interview m
     displayDictModel 
 ```
 
-In this example, the Model `m` is the DictModel created in `init`. The function `displayDictModel` is a helper from `DictModel.elm`, and it just displays the data the interview has collected into the Model. 
+In this example, the value `m` is the DictModel created in `init`. The function `displayDictModel` is a helper from `DictModel.elm`, and it just displays the data the interview has collected into the Model. 
 
 The middle component needs a little explanation:
 
@@ -99,9 +99,9 @@ Now we've got everything we need for a simple guided interview running in the br
 
 Its likely you may want to do more than DictModel can manage. You may want to style your interview differently, introduce branching pathways, or ask users for multiple instances of some items (e.g, a list of their favorite foods). We'll say goodbye to DictModel now, and see how we can use Inquisimin for a more customized guided interview.
 
-1. Model. 
+1. A Custom Model Type. 
 
-We'll start with a Model type that is more descriptive than an empty dictionary. An interview's modeltype will be a product type with members of type `Question a`. 
+We'll start with creating our own custom type for our interview that is more descriptive than an empty dictionary. An interview's model type will be a product type with members of type `Question a`. 
 
 A `Question a` is a type that:
 
