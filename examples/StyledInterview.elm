@@ -205,7 +205,8 @@ collectColor (idx, q) =
             ]
 
 
-askfname : Model -> Interviewer Model (Element Msg)
+--askfname : Model -> Interviewer Model (Element Msg)
+askfname : QuestionView Model (Element Msg)
 askfname model = case model.firstName of 
     Answered _ _ _ -> Continue model
     Unanswered txt _ err  -> Ask (column [width fill] 

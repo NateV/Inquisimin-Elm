@@ -7,6 +7,8 @@ type Valid a = Valid a
 type Interviewer a b = Continue a
                      | Ask b
 
+type alias QuestionView model viewtype = model -> Interviewer model viewtype 
+
 
 {-| A Collection represents a list of values that the interview user can add to.
 

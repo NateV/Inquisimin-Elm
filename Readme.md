@@ -6,9 +6,9 @@
 
 Minimal guided interviews with Elm. 
 
-There are lots of great tools for setting up guided interviews. Often these tools come with a lot of other great features too. Sometimes I don't want all those other features. Instead, I just want a guided interview that runs in the browser. It asks some questions, collects some data, and shows something to the user based on the user's data. Thats it. 
+There are lots of great tools for setting up guided interviews. Often these tools come with a lot of other great features too. Sometimes I don't want all those other features. Instead, I just want a guided interview that runs in the browser. It asks some questions, collects the answers, and shows something to the user based on the user's data. Thats it. 
 
-Inquisimin aims to help with this limited task. If you need more features, you can use Inquisimin to collect data that you then send to some other tool. Inquisimin only helps with the guided interview, and you can plug it into more complicated applications however you like. 
+Inquisimin aims to help with this limited task. If you need more features, you can use Inquisimin to collect data that you then send to some other tool, such as a document template filler-outer. Inquisimin helps with the guided interview, and you can plug it into more complicated applications however you like. 
 
 
 
@@ -28,7 +28,7 @@ The `DictModel.elm` module provides helpers for creating a very simple interview
 
 3. An `interview` that desribes how these questions should get asked. 
 
-DictModel interviews can handle branching paths. (See [this example](examples/BranchingDictModel.elm))
+DictModel interviews can handle branching paths. See [this example](examples/BranchingDictModel.elm)
 
 DictModel interviews have other limitations. They currently don't support asking a user for an unknown number of some repeated item. (A `Collection` in the more comlicated non-DictModel interviews). If you are using the helpers for making questions for users, these views will all create HTML views, so you cannot use Elm-UI instead. These interviews also do not currently support input validation. If these restrictions don't work for you, you'll need to go beyond `DictModel` interviews. We'll see in this section how `DictModel` interviews work, and then we'll see how to go beyond them in the next section.  
 
@@ -37,7 +37,6 @@ In a DictModel interview, the `main` function is an ordinary `main` Elm function
 
 Here is an example `main` function that will run in Elm's browser sandbox. If you want to run the interview in `Browser.element` or another Program with side effects, modify your main function to hande those effects outside of the interview. 
 
-TODO provide an example with `Browser.element`
 
 ```elm
 main : Program () Model Msg
@@ -51,8 +50,8 @@ main = Browser.sandbox
 Next, we will use helpers from `DictModel.elm` to make the questions our interview will present to users. We'll use `mkTextQuestionView` for this purpose. This function needs a string key to identify this question in the interview's model, and a friendly label to present the question to the user.
 
 ```elm
-askfname : Model -> Interviewer (Model) (Html Msg) 
-askfname model = mkTextQuestionView "firstname"  "First Name" model
+fname : Model -> Interviewer (Model) (Html Msg) 
+fname model = mkTextQuestionView "firstname"  "First Name" model
 ```
 
 You can write these functions in point-free style to be extra concise:
@@ -159,29 +158,44 @@ askfname model = case model.firstName of
 These 'QuestionViews' are mostly just regular views in an Elm application with the extra case-checking to figure out if it is time to ask a particular question view. That means you can ask multiple questions in each one, or stick to a single `Question.` 
 
 
-2. The Interview
+2. The Interview's QuestionViews
 
-An Interview links together your Model of Questions and the Question Views that let the user answer the questions. 
+An Interview links together your Model of Questions and the QuestionViews that let the user answer the questions. 
 
-Create an interview with the `Interview model msg` type. An `Interview` needs three peices. 
-
-First, the Interview needs the model on which it will operate.
-
-Second, it needs the interview to run. An interview is a chain of `Model -> Interviewer Model viewtype` functions. Combine them with 
-`ask `, as in 
+An interview is a chain of `model -> Interviewer model viewtype` functions. We combine them with 
+`ask ` into a series of steps that a user will go through. As in:
 
 ```elm
-Continue model 
-|> ask questionView1
-|> ask questionView2
+myQuestionViews m_ -> 
+    |> ask questionView1
+    |> ask questionView2
+```
+(Here, `m_` is an `Interviewer model viewtype` value that `ask` pipes through the `QuestionView`s).
+
+Each of these `QuestionView` functions has type `model -> Interviewer model viewtype`. The type `QuestionView` is actually just an alias for that function type signature.  
+
+3. Displaying the results.
+
+Every Interview needs to end with a 'catchall' view that will always appear. It has the type `model -> Html msg`. You can use this catchall to display the final 'results' of the interview, or to dispatch actions such as network calls to use the interview's data to generate a document.
+
+This might look like: 
+
+```elm
+myLastStep : Model -> Html Msg
+myLastStep model = div [] [text "All done!"]
 ```
 
-Each of these `questionView` functions has type `model -> Interview model viewtype`.  
+4. Putting it all together
 
-Finally, you must add a function with the type `Interviewer model viewtype -> viewtype`. This function will always display at the end of the interview, if no other question needs to get asked. You can think of it either as the 'termination' of the interview, or as a 'catch-all' that will display if nothing else does.
+Combine your model, the `QuestionViews`, and the final display function within an `Interview` value:
+
+```elm
+myinterview : Model -> Interview Model (Html Msg)
+myinterview model = Interview model myQuestionViews myLastStep
+```
 
 
-3.  Branching questions
+5.  Branching questions
 
 We can handle branching questions with the following technique. 
 
@@ -236,7 +250,7 @@ askPizzaDetails model = case model.pizza of
 ```
 
 
-4. Collecting Lists
+6. Collecting Lists
 
 To collect a list of values of type `Question a`, add an item of type `Collection a` to your model. This will store a dictionary of `Dict Int (Question a)` values as well as a flag indicating if the list is `Complete` or not. The collection's `Complete` state is distict from whether the question in the collection are `Answered` or still `Unanswered`.  
 
@@ -276,16 +290,11 @@ collectColor (idx, q) =
 
 ```
 
-5. Revisiting questions.
+7. Revisiting questions.
 
 Currently, we can 'go back' to questions in a DictModel interview. The DictModel has a 'Go Back' message that will return the user to the previously answered question. 
 
-You can add 'going back' into a TypedModel interview too. The example [examples/CustomViewsInterview.elm](CustomViewsInterview) demonstrates one way to do it. The `Model` in that interview has two members. The `interviewState` is the current state of the interview. This is what the `Model` in an interview without history would be. The second member of the `Model` is called `history`. When questions in this interview are 'completed' by a `Save` message, the last interview state is saved into the history of the whole interview. Then when `update` receives a `GoBack` `Msg`, `update` returns a model with the last version of the history as the new current interview state. This effectively 'undoes' the last question the user answered. (There is a pecadillo that is unresolved with this technique -- invalid form entries that can't be saved will still have their state stored in the history) 
-
-
-6. Displaying the results.
-
-Every Interview needs to end with a 'catchall' view that will always appear. It has the type `Interviewer model (Html msg) -> Html msg)`. You can use this catchall to display the final 'results' of the interview, or to dispatch actions such as network calls to use the interview's data to generate a document.
+You can add 'going back' into a TypedModel interview too. The example [CustomViewsInterview](examples/CustomViewsInterview.elm) demonstrates one way to do it. The `Model` in that interview has two members. The `interviewState` is the current state of the interview. This is what the `Model` in an interview without history would be. The second member of the `Model` is called `history`. When questions in this interview are 'completed' by a `Save` message, the last interview state is saved into the history of the whole interview. Then when `update` receives a `GoBack` `Msg`, `update` returns a model with the last version of the history as the new current interview state. This effectively 'undoes' the last question the user answered. (There is a pecadillo that is unresolved with this technique -- invalid form entries that can't be saved will still have their state stored in the history) 
 
 7. Producing documents. 
 
@@ -295,4 +304,4 @@ The example, "InterviewWithXFDF.elm", demonstrates another interesting possibili
 
 8. Persistence
 
-Inquisimin runs locally in the browser. It doesn't have any mechanism built-in for persisting the interview data. You might consider a `Cmd` that serializes your model and sends it out to be stored in some way, perhaps in browser storage or a cookie.
+Inquisimin runs locally in the browser. It doesn't have any mechanism built-in for persisting the interview data once the browser tab closes. You might consider a `Cmd` that serializes your model and sends it out to be stored in some way, perhaps in browser storage or a cookie.
