@@ -1,21 +1,32 @@
-module DictModelInterview exposing (..)
+module DictModelElement exposing (..)
 
-import DictModel exposing (..)
 import Browser
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Inquisimin exposing (..)
+import DictModel exposing (..)
 
-{-| An Interview demonstrating the DictModel pattern and using DictModel related helpers for making user views. This is the simplest way to make an interview with Inquisimin, and also the most constrained. -}
+{-| Interview demonstrating how to use Browser.element with a DictModel interview. 
+-}
+
 
 main : Program () DictModel Msg
-main = Browser.sandbox 
-    { init = mkDictModel 
-    , update = updateDictModel
+main = Browser.element
+    { init = \_ -> (mkDictModel, Cmd.none) 
     , view = mkDictModelInterviewView interview
+    , update = modifiedUpdateDictModel
+    , subscriptions = \_ -> Sub.none
     }
 
+{-| 
+Wrap DictModel's default `updateDictModel` function in another function that will 
 
+1) pass along the message and model to `updateDictModel`, and 
+2) do whatever you want with the commands.
+
+-}
+modifiedUpdateDictModel : Msg -> DictModel -> (DictModel, Cmd Msg)
+modifiedUpdateDictModel msg model = (updateDictModel msg model, Cmd.none)
 
 interview : DictModel -> Interview DictModel (Html Msg)
 interview m = Interview m

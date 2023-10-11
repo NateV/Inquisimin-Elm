@@ -18,8 +18,8 @@ type Msg = UpdateQuestion String String
          | StartOver
          | GoBack 
 
-{-| All DictModel interviews share this Model type, which is just a Dict.-}
-type alias Model = ODict.OrderedDict String (Question String)
+{-| All DictModel interviews share this DictModel type, which is just a Dict.-}
+type alias DictModel = ODict.OrderedDict String (Question String)
 
 
 {-| Make the initial model for a DictModel interview with this empty dictionary.
@@ -31,7 +31,7 @@ mkDictModel : ODict.OrderedDict String (Question String)
 mkDictModel = ODict.empty
 
 
-updateDictModel : Msg -> Model -> Model
+updateDictModel : Msg -> DictModel -> DictModel
 updateDictModel msg model = 
     case msg of
         UpdateQuestion k txt -> ODict.insert k (updateQuestion txt (mkq alwaysValid)) model
@@ -42,20 +42,20 @@ updateDictModel msg model =
             Nothing -> model
             Just (pqkey, pq) -> ODict.insert pqkey (unanswer pq) model
     
-previousQuestion : Model -> Maybe (String, (Question String))
+previousQuestion : DictModel -> Maybe (String, (Question String))
 previousQuestion model = 
     case ODict.toList model of
         [] -> Nothing
         first::_ -> Just first
 
-lookupQuestion : String -> Model -> Maybe (Question String)
+lookupQuestion : String -> DictModel -> Maybe (Question String)
 lookupQuestion key model = ODict.get key model
 
 
 {-| Display the current value of a DictModel 
 
 -}
-displayDictModel : Model -> Html Msg
+displayDictModel : DictModel -> Html Msg
 displayDictModel model = div []
     [ div [] <| 
         ODict.foldl (diplayModelPiece) [h3 [] [text "Model:"]] model 
@@ -74,9 +74,9 @@ diplayModelPiece key question acc = acc ++ [
         , text << getQValue <| question
         ]]
 
-mkDictModelInterviewView : (Model -> Interview Model (Html Msg)) -> Model -> Html Msg
+mkDictModelInterviewView : (DictModel -> Interview DictModel (Html Msg)) -> DictModel -> Html Msg
 mkDictModelInterviewView interview model = div [] 
-    [ h2 [] [text "Dict Model Interview"]
+    [ h2 [] [text "Dict DictModel Interview"]
     , displayDictModel model
     , runInterview (interview model)
     ]
@@ -88,7 +88,7 @@ asks a single question.
 Takes a predictate Question that is Answered or Unanswered.
 And Takes a label
 -}
-mkTextQuestionView : String -> String -> Model -> Interviewer Model (Html Msg)
+mkTextQuestionView : String -> String -> DictModel -> Interviewer DictModel (Html Msg)
 mkTextQuestionView key label model = 
     let 
         -- find q in the model or make a new one
@@ -115,7 +115,7 @@ mkTextQuestionView key label model =
   the reader function (if only we could infer instances of Read, amiright?), return the value wrapped in a Maybe type. Or return Nothing, to indictate the interview still needs to collect the information about which branch to go down. 
 
 -}
-checkChoice : (String -> Maybe a) -> String -> Model -> Maybe a
+checkChoice : (String -> Maybe a) -> String -> DictModel -> Maybe a
 checkChoice reader key model = 
     lookupQuestion key model
     |> Maybe.andThen getQAnswer

@@ -35,7 +35,7 @@ DictModel interviews have other limitations. They currently don't support asking
 
 In a DictModel interview, the `main` function is an ordinary `main` Elm function. The initial model is an empty Dictionary. The `update` method is `updateDictModel` from `DictModel.elm`. The view is `mkDictModelInterviewView`, also from `DictModel.Elm`. You need to write your own `interview` function, though, so we'll define that next.
 
-Here is an example `main` function that will run in Elm's browser sandbox. If you want to run the interview in `Browser.element` or another Program with side effects, modify your main function to hande those effects outside of the interview. 
+Here is an example `main` function that will run in Elm's browser sandbox. If you want to run the interview in `Browser.element` or another Program with side effects, you'll need to make some adjustments to handle those effects outside of DictModel's helpers. See [this example using `Browser.element`](examples/DictModelElement.elm)
 
 
 ```elm

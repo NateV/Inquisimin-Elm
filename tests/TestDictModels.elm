@@ -19,11 +19,11 @@ suite = describe "DictModel Interviews"
     [ test "new interview presents the first question" <| 
         \_ -> 
             let 
-                askfname : DM.Model -> Interviewer (DM.Model) (Html DM.Msg) 
+                askfname : DM.DictModel -> Interviewer (DM.DictModel) (Html DM.Msg) 
                 askfname model = DM.mkTextQuestionView "firstname"  "First Name" model
                 
                 -- a dictmodel question in point-free style.
-                cattype : DM.Model -> Interviewer (DM.Model) (Html DM.Msg)
+                cattype : DM.DictModel -> Interviewer (DM.DictModel) (Html DM.Msg)
                 cattype = DM.mkTextQuestionView "cattype" "Cat Type"
                 
         
@@ -41,11 +41,11 @@ suite = describe "DictModel Interviews"
     , test "interview presents the next question" <| 
         \_ -> 
             let 
-                askfname : DM.Model -> Interviewer (DM.Model) (Html DM.Msg) 
+                askfname : DM.DictModel -> Interviewer (DM.DictModel) (Html DM.Msg) 
                 askfname model = DM.mkTextQuestionView "firstname"  "First Name" model
                 
                 -- a dictmodel question in point-free style.
-                cattype : DM.Model -> Interviewer (DM.Model) (Html DM.Msg)
+                cattype : DM.DictModel -> Interviewer (DM.DictModel) (Html DM.Msg)
                 cattype = DM.mkTextQuestionView "cattype" "Cat Type"
                 
                 newModel = DM.mkDictModel
@@ -65,11 +65,11 @@ suite = describe "DictModel Interviews"
     , test "Back msg goes to the previous question" <| 
         \_ -> 
             let 
-                askfname : DM.Model -> Interviewer (DM.Model) (Html DM.Msg) 
+                askfname : DM.DictModel -> Interviewer (DM.DictModel) (Html DM.Msg) 
                 askfname model = DM.mkTextQuestionView "firstname"  "First Name" model
                 
                 -- a dictmodel question in point-free style.
-                cattype : DM.Model -> Interviewer (DM.Model) (Html DM.Msg)
+                cattype : DM.DictModel -> Interviewer (DM.DictModel) (Html DM.Msg)
                 cattype = DM.mkTextQuestionView "cattype" "Cat Type"
                 
                 newModel = DM.mkDictModel
