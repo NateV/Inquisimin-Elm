@@ -194,6 +194,23 @@ myinterview : Model -> Interview Model (Html Msg)
 myinterview model = Interview model myQuestionViews myLastStep
 ```
 
+Run the interview inside your application's `view` function with `runInterview`, as in 
+
+```elm
+view : Model -> Html Msg
+view model = 
+    div [] [
+        div []
+            [ h3 [] [text "My important interview"]
+            , displayModelSoFar model ],
+        div []
+            --[ doInterview model]
+            [runInterview (myinterview model)]
+            , button [onClick GoBack] [text "Go back"]
+            ]
+ 
+```
+
 
 5.  Branching questions
 

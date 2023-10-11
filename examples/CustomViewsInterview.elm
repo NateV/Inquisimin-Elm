@@ -182,7 +182,8 @@ view : Model -> Html Msg
 view model = 
     div [] [
         div []
-            [ displayModelSoFar model ],
+            [ h3 [] [text "My important interview"]
+            , displayModelSoFar model ],
         div []
             --[ doInterview model]
             [runInterview (myinterview model)]
