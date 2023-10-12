@@ -21,7 +21,8 @@ interview : DictModel -> Interview DictModel (Html Msg)
 interview m = Interview m
     (\m_ -> m_
         |> ask askfname
-        |> ask cattype)
+        |> ask cattype
+        |> ask askdessert)
     displayDictModel 
 
 
@@ -32,4 +33,5 @@ askfname model = mkTextQuestionView "firstname"  "First Name" model
 cattype : DictModel -> Interviewer DictModel (Html Msg)
 cattype = mkTextQuestionView "cattype" "Cat Type"
 
-
+askdessert : QuestionView DictModel (Html Msg)
+askdessert = mkSelectQuestionView "dessert" "Dessert?" [("pie","Pie"),("icecream","IceCream")]
