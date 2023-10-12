@@ -1,4 +1,6 @@
 module Inquisimin exposing (..)
+
+
 import Dict
 
 type Valid a = Valid a
