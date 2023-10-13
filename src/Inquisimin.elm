@@ -1,14 +1,91 @@
-module Inquisimin exposing (..)
+module Inquisimin exposing (
+    Valid(..),
+    Question(..),
+    Interview,
+    Interviewer(..),
+    QuestionView,
+    Collection,
+    Complete,
+    getComplete,
+    setComplete,
+    getCollectionStarter,
+    mkCollection,
+    getNewId,
+    mkq,
+    getQuestion,
+    getQuestions,
+    getQValue,
+    getQAnswer, -- redundant with getAnswer
+    getAnswer,
+    completeQuestion,
+    updateQuestion,
+    unanswer,
+    updateItemText,
+    runInterview,
+    ask,
+    alwaysValid
+    )
 
+{-| Tools for making lightweight guided interviews in the browser. 
+
+# Guided Interview
+
+@docs Interview
+
+@docs Interviewer
+
+@docs ask
+
+@docs runInterview
+
+# Questions
+
+@docs Question
+
+@docs Valid
+
+@docs QuestionView
+
+## Dealing with Questions
+
+@docs mkq, completeQuestion, getAnswer, getQAnswer, getQValue, getQuestion, getQuestions, unanswer, updateQuestion
+
+## Already-made Question parsers
+
+@docs alwaysValid
+
+# Collections
+
+Use `Collections` to allow a user to collect 0 or more instances of something.
+
+@docs Collection
+
+@docs mkCollection, getCollectionStarter, getComplete, getNewId, setComplete, updateItemText
+@docs Complete
+
+-}
 
 import Dict
 
+
+{-| Wraps a Question's value. Either wraps a successfully parsed 
+value, or explains the error. 
+
+TODO use Result instead of making our own.
+
+-}
 type Valid a = Valid a
              | Error String
 
+{-| Describes whether to `Continue` looking for something to `Ask` in an interview, or to go ahead and 
+`Ask something.
+-}
 type Interviewer a b = Continue a
                      | Ask b
 
+{-| QuestionViews are the functions that take an interview's model,
+then either `Continue` if the question shouldn't get asked, or `Ask` the `Html Msg` or other user-interaction
+-}
 type alias QuestionView model viewtype = model -> Interviewer model viewtype 
 
 
@@ -21,34 +98,54 @@ It takes a Dict that will map stored values in the collection.
 -}
 type Collection a = Collection Complete (Question a) (Dict.Dict Int (Question a))
 
+{-| Flag to inticate if a Collection is complete, or that the user should still be invited 
+to add to it.
+-}
 type Complete = Complete
               | Incomplete
 
+{-| 
+-}
 getComplete : Collection a -> Complete
 getComplete (Collection c _ _) = c
 
+{-| 
+-}
 setComplete : Collection a -> Complete -> Collection a 
 setComplete (Collection _ q dct) c = Collection c q dct
 
+{-| 
+-}
 getCollectionStarter : Collection a -> Question a
 getCollectionStarter (Collection _ s _) = s
 
+{-| 
+-}
 mkCollection : (String -> Valid a) -> Collection a
 mkCollection parser = Collection Incomplete (mkq parser) (Dict.singleton 0 (mkq parser))
 
+{-| 
+-}
 getQuestion : Collection a -> Int -> Maybe (Question a)
 getQuestion (Collection _ _ dct) idx = Dict.get idx dct
 
+{-| 
+-}
 getQuestions : Collection a -> List (Int, Question a)
 getQuestions (Collection _ _ dct) = Dict.toList dct
 
+{-| 
+-}
 getNewId : Collection a -> Int
 getNewId (Collection _ _ dct) =  case List.maximum (Dict.keys dct) of
     Nothing -> 0
     Just idx -> idx + 1
 
 
+-- TODO write a addItemToCollection function
 
+{-| Update the text stored in an item in a Collection. 
+-}
 updateItemText : Collection a -> Int -> String -> Collection a
 updateItemText (Collection c s dct) idx txt = 
     let 
@@ -107,6 +204,9 @@ ask question modelOrView =
 
 
 
+{-| A bridge between the typed value you want to collect in an interview and string inputs from HTML forms. Also validates form inputs.
+
+-}
 type Question a = Answered 
                     a -- the 'real' value we're collecting.
                     String --the stored thing that a came from
@@ -116,11 +216,18 @@ type Question a = Answered
                     (String -> Valid a) 
                     String -- an error message describing what's wrong with the current value.
 
+{-| Get the string value that a Question is storing, whether it parses or not. 
+-}
 getQValue : Question a -> String
 getQValue q = case q of 
     Answered _ orig _-> orig
     Unanswered t _  _-> t
 
+{-| Get the stored value of an Answered Question. If the Question is UnAnswered, Nothing. 
+
+TODO redundant with getAnswer
+
+-}
 getQAnswer : Question a -> Maybe a
 getQAnswer q = case q of
     Answered a _ _ -> Just a

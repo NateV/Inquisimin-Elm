@@ -1,5 +1,9 @@
 {
     "type": "application",
+    "name": "NateV/inquisimin",
+    "summary": "Help to write lightweight in-browser guided interviews",
+    "license":"BSD-3-Clause",
+    "version":"0.0.1",
     "source-directories": [
         "src",
         "examples"
@@ -29,5 +33,10 @@
         "indirect": {
             "elm/random": "1.0.0"
         }
-    }
+    },
+    "exposed-modules": [
+        "DictModel",
+        "Inquisimin",
+        "XFDF"
+    ]
 }
