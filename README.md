@@ -1,6 +1,6 @@
 # Inquisimin Elm
 
-**Early, early days of an experiment; a small plant I plan to grow slowly. Feedback welcomed**
+**Early, early days of an experiment; a small plant I plan to grow slowly. Feedback welcomed.**
 
 [<img alt="alt_text" width="100px" src="Inquismin Logo.png" align="right"/>](https://github.com/NateV/Inquisimin-Elm)
 
@@ -10,11 +10,20 @@ There are lots of great tools for setting up guided interviews. Often these tool
 
 Inquisimin aims to help with this limited task. If you need more features, you can use Inquisimin to collect data that you then send to some other tool, such as a document template filler-outer. Inquisimin helps with the guided interview, and you can plug it into more complicated applications however you like. 
 
+```elm
+interview m = Interview 
+    m
+    (\m_ -> m_ ->
+        ask doYouLikeWritingCode
+        ask doYouLikeUsingElm
+        )
+    suggestUserTriesInquisimin
+```
 
 
 ## New to Elm?
 
-Inquisimin is a library to help write guided interivews in the Elm language. One of its goals is to _not_ be an all-inclusive platform for guided interviews. Instead it provides a handful of functions and patterns for making it easier to add guided interviews to a regular Elm application. You can pick and choose among these, and you can fit them into a larger application if you like.
+Inquisimin is a library to help write guided interviews in the Elm language. One of its goals is to _not_ be an all-inclusive platform for guided interviews. Instead it provides a handful of functions and patterns for making it easier to add guided interviews to a regular Elm application. You can pick and choose among these, and you can fit them into a larger application if you like.
 
 A consequence of this goal is that using Inquisimin requires installing Elm and learning at the least some basics about how to use it. If you are new to Elm, I recommend visiting the [Elm Introduction](https://guide.elm-lang.org/)
 
@@ -33,9 +42,9 @@ DictModel interviews can handle branching paths. See [this example](examples/Bra
 DictModel interviews have other limitations. They currently don't support asking a user for an unknown number of some repeated item. (A `Collection` in the more complicated non-DictModel interviews). If you are using the helpers for making questions for users, these views will all create HTML views, so you cannot use Elm-UI instead. These interviews also do not currently support input validation. If these restrictions don't work for you, you'll need to go beyond `DictModel` interviews. We'll see in this section how `DictModel` interviews work, and then we'll see how to go beyond them in the next section.  
 
 
-In a DictModel interview, the `main` function is an ordinary `main` Elm function. The initial model is an empty Dictionary. The `update` method is `updateDictModel` from `DictModel.elm`. The view is `mkDictModelInterviewView`, also from `DictModel.Elm`. You need to write your own `interview` function, though, so we'll define that next.
+In a DictModel interview, the `main` function is an ordinary `main` Elm function. The initial model is an Ordered Dictionary, and there's a helper, `mkDictModel`, to create it. The `update` method is `updateDictModel` from `DictModel.elm`. The view is `mkDictModelInterviewView`, also from `DictModel.Elm`. You need to write your own `interview` function, though, so we'll define that a couple lines down.
 
-Here is an example `main` function that will run in Elm's browser sandbox. If you want to run the interview in `Browser.element` or another Program with side effects, you'll need to make some adjustments to handle those effects outside of DictModel's helpers. See [this example using `Browser.element`](examples/DictModelElement.elm)
+Here is an example `main` function that will run in Elm's browser sandbox. If you want to run the interview in `Browser.element` or another `Program` with side effects, you'll need to make some adjustments to handle those effects outside of DictModel's helpers. See [this example using `Browser.element`](examples/DictModelElement.elm)
 
 
 ```elm
@@ -61,7 +70,7 @@ cattype : DictModel -> Interviewer DictModel (Html Msg)
 cattype = mkTextQuestionView "cattype" "Cat Type"
 ```
 
-Finally, the last piece of our `DictModel` interivew is the `interview` function itself. This function takes the interview's Model and creates a value of the `Interview` type. The interview type needs 
+Finally, the last piece of our `DictModel` interview is the `interview` function itself. This function takes the interview's model and creates a value of the `Interview` type. The interview type needs 
 
 1. The model
 2. A function that lays out the order in which the interview's questions should be asked
@@ -83,14 +92,14 @@ In this example, the value `m` is the DictModel created in `init`. The function 
 The middle component needs a little explanation:
 
 ```elm
-\m -> m_ 
+\m_ -> m_ 
     |> ask askfname
     |> ask cattype
 ```
 
 This function describes the steps of the interview. First the interview will ask the `askfname` question, followed by then the `cattype` question. These functions, `askfname` and `cattype`, lets call them "QuestionViews". Each one decides whether it needs to be asked, and then provides the user interface for asking the question. The function `ask` binds together "QuestionView" functions such as these. This way, we can write interviews by describing their steps in what I hope is a natural-feeling syntax. [^Either]
 
-[^Either]: If you are familiar with the Either monad, `ask` and the QuestionViews basically work like the Either Monad. 
+[^Either]: If you are familiar with the Either monad, `ask` and the `QuestionView`s basically work like the Either monad. 
 
 Now we've got everything we need for a simple guided interview running in the browser. We'll ask a series of questions to the user and present them with the results. From there, other parts of an application can do something else with that collected data.
 

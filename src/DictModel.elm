@@ -1,6 +1,18 @@
-module DictModel exposing (..)
+module DictModel exposing (
+    DictModel,
+    Msg,
+    mkDictModel,
+    updateDictModel,
+    previousQuestion,
+    lookupQuestion,
+    displayDictModel,
+    mkDictModelInterviewView,
+    mkTextQuestionView,
+    mkSelectQuestionView,
+    checkChoice
+    )
 
-{- This module provides methods for making interviews really, really quickly at the cost of 
+{-| This module provides methods for making interviews really, really quickly at the cost of 
 input validation. This module provides helpers for making interviews that store state in a dictionary. You can only ask one question per step of the interview, and the values are all stored as text. 
 
 This method of making Inquisimin interviews is called the 'DictModel' method because the interivew's state is kept in an `OrderedDict String String`
@@ -65,25 +77,34 @@ mkDictModel = ODict.empty
 updateDictModel : Msg -> DictModel -> DictModel
 updateDictModel msg model = 
     case msg of
-        UpdateQuestion k txt -> ODict.insert k (updateQuestion txt (mkq alwaysValid)) model
+        UpdateQuestion k txt -> ODict.update k (\_ -> Just <| updateQuestion txt (mkq alwaysValid)) model
         SaveQuestion k txt -> ODict.remove k model
-            |> ODict.insert k (Answered txt txt (\t -> Valid t))
+            |> ODict.update k (\_ -> Just <| Answered txt txt (\t -> Valid t))
         StartOver -> ODict.empty
         GoBack -> case previousQuestion model of 
             Nothing -> model
-            Just (pqkey, pq) -> ODict.insert pqkey (unanswer pq) model
+            Just (pqkey, pq) -> ODict.update pqkey (\_ -> Just <| unanswer pq) model
     
+
+tail : a -> List a -> a
+tail head rest = case rest of 
+    [] -> head
+    [t] -> t
+    m::more -> tail m more
 
 {-| Find the last question the user answered 
 
 If the interview is already at the beginning, this evaluates to `Nothing`.
+
+BUG needs to identify the previous Answered question, not the previous anything entered.
 
 -}
 previousQuestion : DictModel -> Maybe (String, (Question String))
 previousQuestion model = 
     case ODict.toList model of
         [] -> Nothing
-        first::_ -> Just first
+        [only] -> Just only
+        fst::lst-> Just <| tail fst lst
 
 
 {-| Try to find a question in the DictModel based on the Question's key.
@@ -103,10 +124,20 @@ displayDictModel model = div []
         ++ 
         [div [] 
             [ button [onClick StartOver] [text "Start Over"]]
+        , displaypreviousQuestion model
         ]
     ]
 
 
+displaypreviousQuestion : DictModel -> Html Msg
+displaypreviousQuestion model = case previousQuestion model of
+    Nothing -> text "No previous question"
+    Just (key, q) -> text ("Prev q: " ++ key)
+
+
+{-| Helper for part of the `displayDictModel` function
+
+-}
 diplayModelPiece : String -> Question String -> List (Html Msg) -> List (Html Msg)
 diplayModelPiece key question acc = acc ++ [ 
     div [] 
@@ -182,11 +213,14 @@ mkSelectQuestionView key label options model =
   Check if a value has been collected with the key `key`. Then if that value is validly parsed by 
   the reader function (if only we could infer instances of Read, amiright?), return the value wrapped in a Maybe type. Or return Nothing, to indictate the interview still needs to collect the information about which branch to go down. 
 
+
+
 -}
 checkChoice : (String -> Maybe a) -> String -> DictModel -> Maybe a
 checkChoice reader key model = 
     lookupQuestion key model
     |> Maybe.andThen getQAnswer
+    --|> Maybe.andThen (reader << getQValue)
     |> Maybe.andThen reader
 
 

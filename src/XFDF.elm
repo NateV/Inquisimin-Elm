@@ -12,7 +12,7 @@ module XFDF exposing (
 XFDF is an xml format for PDF Fillable form data. We can write a guided interiew that collects data and then
 downloads the data as an XFDF file. Users can import the xfdf file into a fillable pdf. 
 
-@docs XFDF, XFDFField, xfieldToString, xfdfToString
+@docs XFDF, XFDFField, xfdfToString
 
 
 -}

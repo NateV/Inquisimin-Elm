@@ -23,7 +23,7 @@ readPizzaOrDessert pd = case pd of
 
 -- Main program
 
-main : Program () Model Msg
+main : Program () DictModel Msg
 main = Browser.sandbox 
     { init = mkDictModel 
     , update = updateDictModel
@@ -31,39 +31,44 @@ main = Browser.sandbox
     }
 
 
-interview : Model -> Interview Model (Html Msg)
+interview : DictModel -> Interview DictModel (Html Msg)
 interview m = Interview m
     (\m_ -> m_
         |> ask askfname
+        |> ask lname
         |> ask pizzaOrDessert
         |> ask cattype)
     displayDictModel 
 
+lname : QuestionView DictModel (Html Msg)
+lname = mkTextQuestionView "lname" "Last name"
+
+
 {-| The root of a branch, which decides which path to go down. 
 -}
-pizzaOrDessert : Model -> Interviewer Model (Html Msg)
-pizzaOrDessert model = case checkChoice readPizzaOrDessert "pizza" model of
+pizzaOrDessert : DictModel -> Interviewer DictModel (Html Msg)
+pizzaOrDessert model = case checkChoice readPizzaOrDessert "pizzaordessert" model of
     Just Pizza -> pizzaBranch model
     Just Dessert -> dessertBranch model
-    Nothing -> mkTextQuestionView "pizza" "Pizza or Dessert?" model
+    Nothing -> mkSelectQuestionView "pizzaordessert" "Pizza or Dessert?" [("Pizza","Pizza"),("Dessert","Dessert")] model
 
-dessertBranch : Model -> Interviewer (Model) (Html Msg)
+dessertBranch : DictModel -> Interviewer (DictModel) (Html Msg)
 dessertBranch model = 
     Continue model 
     |> ask (mkTextQuestionView "dessert" "Favorite type of dessert?")
     |> ask (mkTextQuestionView "topping" "Favorite desert topping?")
 
-pizzaBranch : Model -> Interviewer (Model) (Html Msg)
+pizzaBranch : DictModel -> Interviewer (DictModel) (Html Msg)
 pizzaBranch model =
     Continue model
     |> ask (mkTextQuestionView "topping" "Favorite pizza topping?")
     |> ask (mkTextQuestionView "size" "What size?") 
 
-askfname : Model -> Interviewer (Model) (Html Msg) 
+askfname : DictModel -> Interviewer (DictModel) (Html Msg) 
 askfname model = mkTextQuestionView "firstname"  "First Name" model
 
 -- a dictmodel question in point-free style.
-cattype : Model -> Interviewer (Model) (Html Msg)
+cattype : DictModel -> Interviewer (DictModel) (Html Msg)
 cattype = mkTextQuestionView "cattype" "Cat Type"
 
 

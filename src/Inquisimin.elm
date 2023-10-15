@@ -1,7 +1,7 @@
 module Inquisimin exposing (
     Valid(..),
     Question(..),
-    Interview,
+    Interview(..),
     Interviewer(..),
     QuestionView,
     Collection,
