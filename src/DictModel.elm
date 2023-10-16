@@ -1,6 +1,6 @@
 module DictModel exposing (
     DictModel,
-    Msg,
+    Msg(..),
     mkDictModel,
     updateDictModel,
     previousQuestion,
@@ -86,25 +86,26 @@ updateDictModel msg model =
             Just (pqkey, pq) -> ODict.update pqkey (\_ -> Just <| unanswer pq) model
     
 
-tail : a -> List a -> a
-tail head rest = case rest of 
-    [] -> head
-    [t] -> t
-    m::more -> tail m more
+{-| Helper for choosing the most recent Answered question in an Interview.
+
+-}
+pickAnswered : (String, Question String) -> Maybe (String, Question String) -> Maybe (String, Question String)
+pickAnswered nextQ acc = case acc of
+    Nothing -> case nextQ of 
+        (key, Unanswered _ _ _) -> Nothing
+        (key, Answered val stored parser) -> Just <| (key, Answered val stored parser)
+    Just alreadyFound -> Just alreadyFound
+
 
 {-| Find the last question the user answered 
 
 If the interview is already at the beginning, this evaluates to `Nothing`.
 
-BUG needs to identify the previous Answered question, not the previous anything entered.
 
 -}
 previousQuestion : DictModel -> Maybe (String, (Question String))
 previousQuestion model = 
-    case ODict.toList model of
-        [] -> Nothing
-        [only] -> Just only
-        fst::lst-> Just <| tail fst lst
+    List.foldr pickAnswered Nothing (ODict.toList model)
 
 
 {-| Try to find a question in the DictModel based on the Question's key.
