@@ -13,11 +13,12 @@ Inquisimin aims to help with this limited task. If you need more features, you c
 ```elm
 interview m = Interview 
     m
-    (\m_ -> m_ ->
-        ask doYouLikeWritingCode
-        ask doYouLikeUsingElm
+    (\m_ -> m_ 
+        |> ask doYouLikeWritingCode
+        |> ask doYouLikeUsingElm
+        |> ask shouldYourInterviewRunClientSide
         )
-    suggestUserTriesInquisimin
+    suggestUserTriesInquisiminOrSomethingElse
 ```
 
 
