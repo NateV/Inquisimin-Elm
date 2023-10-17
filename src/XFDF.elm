@@ -1,6 +1,6 @@
 module XFDF exposing (
     XFDF,
-    XFDFField,
+    XFDFField(..),
     xfdfToString
     )
 --| For more easily making XFDF files

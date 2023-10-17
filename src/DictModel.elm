@@ -58,6 +58,20 @@ type Msg = UpdateQuestion String String
 
 {-| All DictModel interviews share this DictModel type, which is just a Dict.
 
+The keys this dict identify the questions of the interview. This means 
+the keys of the questions you make should be unique, even if two questions get 
+asked down alternate branches. 
+
+Suppose one branch has a 'name' question that is meant to describe the name of a favorite band.
+Another branch has a 'name' question that is meant to be the name of the user's oldest child. 
+
+The user can go down one branch, fill in 'The Beatles', and then use the "Go Back" button to 
+switch over to the other branch. Now the interview will already have "The Beatles" recorded as 
+the "name" of a question that now is supposed to refer to a child. 
+
+So `Question`s need globally unique keys. They're just strings, so a convention like "band.name" and
+"kid.name" would work fine.
+
 -}
 type alias DictModel = ODict.OrderedDict String (Question String)
 
