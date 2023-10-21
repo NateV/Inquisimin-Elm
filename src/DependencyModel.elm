@@ -250,6 +250,12 @@ deprecatedandThen q req = case req of
     Satisfied _ -> Ask q
 
 
+andThen : QuestionView DepModel (Html Msg) -> Requirements -> Interviewer DepModel (Html Msg)
+andThen q req = case req of 
+    Unsatisfied model needed -> Continue (pushToState model needed)
+    Satisfied model -> q model
+
+
 
 
 pushToState : DepModel -> List Key -> DepModel

@@ -8,6 +8,12 @@ import Html exposing (input, button, Html, div, text)
 import Html.Attributes exposing (placeholder)
 import Html.Events exposing (onClick)
 
+{-| 
+
+I think I can do conditional logic of something like 
+a 'required' key, where the requirement is 'satisfied' 
+based on some function, like 'age' in the state being over 65.
+-}
 
 main : Program () DepModel Msg
 main = Browser.sandbox
@@ -17,16 +23,25 @@ main = Browser.sandbox
     }
 
 theend : DepModel -> Html Msg
-theend model = div [] [text "all done"] 
+theend model = div [] 
+    [text "all done"] 
 
 myLib : Library
 myLib = Library <|
     Dict.fromList 
         [ ("name", nameQ)
         , ("age", ageQ)
+        , ("favfood", favFoodQ)
         ]
 
 
+whatshere : QuestionView DepModel (Html Msg)
+whatshere arg1 =
+    Debug.todo "TODO"
+
+
+favFoodQ : QuestionView DepModel (Html Msg)
+favFoodQ = mkTextQuestionView "favfood" "What's your favorite food?"
 
 {-|  A questionView in a DepModel interview 
 
@@ -34,14 +49,8 @@ myLib = Library <|
 nameQ : QuestionView DepModel (Html Msg)
 nameQ model = 
         model
-        |> require ["age"] 
+        |> require ["age","favfood"] 
         |> andThen (mkTextQuestionView "name" "What's your name") 
-
-
-andThen : QuestionView DepModel (Html Msg) -> Requirements -> Interviewer DepModel (Html Msg)
-andThen q req = case req of 
-    Unsatisfied model needed -> Continue (pushToState model needed)
-    Satisfied model -> q model
 
 
 ageQ : QuestionView DepModel (Html Msg)
