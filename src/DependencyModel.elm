@@ -32,10 +32,40 @@ updateDepModel msg model =
             Nothing -> model
             Just (pqkey, pq) -> goback pqkey pq model
 
+{-| Have an interview go back to the previous question.
 
+
+-}
 goback : Key -> Question String -> DepModel -> DepModel
-goback arg1 arg2 arg3 =
-    Debug.todo "TODO"
+goback keyToReturnTo qToReturnTo model =
+    { state = unanswerQuestion keyToReturnTo qToReturnTo model.state
+    , history = removeFromHistory keyToReturnTo model.history
+    , requirements = keyToReturnTo :: model.requirements
+    , originalRequirements = model.originalRequirements
+    }
+
+
+{-| Remove a key from the stored interview history 
+
+-}
+removeFromHistory : Key -> List Key -> List Key
+removeFromHistory key history =
+    case history of 
+        [] -> []
+        k::rest -> if k == key then rest else k::(removeFromHistory key rest)
+
+{-| Reset a question to an unanswered state with a key `Key` in a state Dictionary. 
+
+-}
+unanswerQuestion : Key -> Question String -> Dict Key (Question String) -> Dict Key (Question String)
+unanswerQuestion key q state = 
+    let 
+        q_ = unanswer q
+    in
+        Dict.update key (\_ -> Just q_) state
+
+
+
 
 {-| Update a question in the DepModel.
 -}
@@ -103,6 +133,7 @@ previousQuestion model =
     let 
         prevKey = case model.history of 
             [] -> Nothing
+            -- things only get added to history when they're Answered.
             x::_ -> Just x
     in
         prevKey
@@ -159,9 +190,27 @@ mkDepModelView lib endView model = div []
     , findQToAsk lib endView model
     ]
 
-findQToAsk : Library -> (DepModel -> Html Msg) -> DepModel ->  (Html Msg) 
-findQToAsk lib endView model = Debug.todo "no idea"
+{-| Find the right question to ask. 
 
+First, check the requirements. If there are none left, we're done!
+If there are requirements, find the q to ask from the library.
+If the q's ready to be asked, then we'll have a (QuestionView DepModel (Html Msg).
+
+-}
+findQToAsk : Library -> (DepModel -> Html Msg) -> DepModel ->  (Html Msg) 
+findQToAsk lib endView model = 
+    case model.requirements of
+        [] -> endView model
+        req::_ -> 
+            case lookupInLibrary req lib of
+                Nothing -> div [] [text <| "error. question for '" ++ req ++ "' not found"]
+                Just q -> whatThis lib endView (q model) 
+
+
+whatThis : Library -> (DepModel -> Html Msg) -> Interviewer DepModel (Html Msg) -> Html Msg
+whatThis lib endView interviewer = case interviewer of
+    Continue model -> findQToAsk lib endView model
+    Ask html -> html 
 
         
 
@@ -179,20 +228,26 @@ type Requirements
     = Satisfied  DepModel
     | Unsatisfied DepModel (List Key)
 
+{-| Require some keys to have been Answered before something else can be asked. 
+
+-}
 require : List Key -> DepModel -> Requirements
-require keys model = 
+require requiredKeys model = 
     let 
-        stateKeys = Dict.keys model.state
-        missingKeys = getMissing stateKeys keys 
+        missingKeys = getMissing model requiredKeys 
     in 
         case missingKeys of 
             [] -> Satisfied model 
             missing -> Unsatisfied model missing
 
+lookupInState : Key -> Dict String (Question String) -> Maybe (Question String)
+lookupInState = Dict.get 
+
+-- TODO delete
 deprecatedandThen : Html Msg -> Requirements -> Interviewer DepModel (Html Msg)
 deprecatedandThen q req = case req of 
     Unsatisfied model needed -> Continue (pushToState model needed)
-    Satisfied model -> Ask q
+    Satisfied _ -> Ask q
 
 
 
@@ -200,20 +255,24 @@ deprecatedandThen q req = case req of
 pushToState : DepModel -> List Key -> DepModel
 pushToState model neededKeys = {model | requirements = neededKeys ++ model.requirements}
 
-{-| Find any items in `required` that are not in `acquired`
+{-| Find any items in requiredKeys that haven't been Answered yet in the model.
 
-    getMissing ["a","b"] ["b"] == ["a"]
+    
 -}
-getMissing : List Key -> List Key -> List Key
-getMissing acquired required = List.foldl (checkMissing acquired) [] required
+getMissing : DepModel -> List Key -> List Key
+getMissing model required = List.foldl (checkMissing model.state) [] required
 
 
-checkMissing : List Key -> Key -> List Key -> List Key
-checkMissing acquired key acc = 
-    if List.member key acquired 
-        then acc 
-        else key :: acc 
+{-| Check if 
 
+-}
+checkMissing : Dict String (Question String) -> Key -> List Key -> List Key
+checkMissing state key acc = 
+    case Dict.get key state of 
+        Nothing -> key :: acc
+        Just q -> case q of 
+            Answered _ _ _ -> acc
+            Unanswered _ _ _ -> key :: acc
 
 
 
@@ -229,7 +288,7 @@ mkTextQuestionView : String -> String -> DepModel -> Interviewer DepModel (Html 
 mkTextQuestionView key label model = 
     let 
         -- find q in the model or make a new one
-        qM = Dict.get key model.state
+        qM = lookupInState key model.state 
         q = case qM of 
                 Nothing -> mkq alwaysValid
                 Just some_q -> some_q 
