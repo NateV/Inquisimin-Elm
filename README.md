@@ -97,7 +97,7 @@ The middle component needs a little explanation:
     |> ask cattype
 ```
 
-This function describes the steps of the interview. First the interview will ask the `askfname` question, followed by then the `cattype` question. These functions, `askfname` and `cattype`, lets call them "QuestionViews". Each one decides whether it needs to be asked, and then provides the user interface for asking the question. The function `ask` binds together "QuestionView" functions such as these. This way, we can write interviews by describing their steps in what I hope is a natural-feeling syntax. [^Either]
+This function describes the steps of the interview. First the interview will ask the `askfname` question, followed by then the `cattype` question. These functions, `askfname` and `cattype` are "QuestionViews". Each one decides whether it needs to be asked, and then provides the user interface for asking the question. The function `ask` binds together "QuestionView" functions such as these. This way, we can write interviews by describing their steps in what I hope is a natural-feeling syntax. [^Either]
 
 [^Either]: If you are familiar with the Either monad, `ask` and the `Interviewer a b` type basically work like the Either monad. 
 
