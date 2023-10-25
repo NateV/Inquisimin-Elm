@@ -234,7 +234,7 @@ We can handle branching questions with the following technique.
 
 If the branch will depend on a user's explicit choice, add a property to the Model that tracks which branch a user is going down. For example 
 
-```
+```elm
 type WantsCake = Yes | No | Unknown 
 ```
 
