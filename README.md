@@ -11,6 +11,7 @@ There are lots of great tools for setting up guided interviews. Often these tool
 Inquisimin aims to help with this limited task. If you need more features, you can use Inquisimin to collect data that you then send to some other tool, such as a document template filler-outer. Inquisimin helps with the guided interview, and you can plug it into more complicated applications however you like. 
 
 ```elm
+-- one style of inquisimin interview looks like this:
 interview m = Interview 
     m
     (\m_ -> m_ 
