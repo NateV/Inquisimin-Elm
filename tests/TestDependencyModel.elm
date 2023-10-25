@@ -9,16 +9,17 @@ import DependencyModel exposing (..)
 import Inquisimin exposing (..)
 import Html exposing (Html)
 import Test.Html.Selector exposing (text)
+import Dict
 
 suite : Test
 suite = describe "DependencyModel interviews" 
     [ test "checkMissing" <| 
         \_ -> 
             let 
-                acquired = ["a","b","c"]
+                model = DepModel (Dict.fromList [("a", completeQuestion << mkq <| alwaysValid)]) [] ["d"] ["a","d"]
                 required = ["a","d"]
                 missing = ["d"]
             in
-                Expect.equal (getMissing acquired required) missing
+                Expect.equal (getMissing model required) missing
     ] 
  

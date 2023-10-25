@@ -8,6 +8,8 @@ import Html exposing (input, button, Html, div, text)
 import Html.Attributes exposing (placeholder)
 import Html.Events exposing (onClick)
 
+
+
 {-| 
 
 I think I can do conditional logic of something like 
@@ -15,14 +17,16 @@ a 'required' key, where the requirement is 'satisfied'
 based on some function, like 'age' in the state being over 65.
 -}
 
-main : Program () DepModel Msg
+
+
+main : Program () DepModel DepMsg
 main = Browser.sandbox
     { init = mkDepModel ["name"]
     , update = updateDepModel
     , view = mkDepModelView myLib theend
     }
 
-theend : DepModel -> Html Msg
+theend : DepModel -> Html DepMsg
 theend model = div [] 
     [text "all done"] 
 
@@ -35,25 +39,20 @@ myLib = Library <|
         ]
 
 
-whatshere : QuestionView DepModel (Html Msg)
-whatshere arg1 =
-    Debug.todo "TODO"
-
-
-favFoodQ : QuestionView DepModel (Html Msg)
+favFoodQ : QuestionView DepModel (Html DepMsg)
 favFoodQ = mkTextQuestionView "favfood" "What's your favorite food?"
 
 {-|  A questionView in a DepModel interview 
 
 -}
-nameQ : QuestionView DepModel (Html Msg)
+nameQ : QuestionView DepModel (Html DepMsg)
 nameQ model = 
         model
         |> require ["age","favfood"] 
-        |> andThen (mkTextQuestionView "name" "What's your name") 
+        |> thenAsk (mkTextQuestionView "name" "What's your name") 
 
 
-ageQ : QuestionView DepModel (Html Msg)
+ageQ : QuestionView DepModel (Html DepMsg)
 ageQ = mkTextQuestionView "age" "Whats your age"
 
 

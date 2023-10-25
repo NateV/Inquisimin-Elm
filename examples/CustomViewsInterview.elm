@@ -114,6 +114,9 @@ myinterview m = Interview
 
 
 
+
+
+
 type Msg = UpdateName String
          | UpdateAge String
          | UpdateFruit String

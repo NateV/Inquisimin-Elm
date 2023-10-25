@@ -1,7 +1,36 @@
-module DependencyModel exposing (..)
+module DependencyModel exposing (
+    DepModel,
+    DepMsg(..),
+    updateDepModel,
+    mkDepModel,
+    mkDepModelView,
+    mkTextQuestionView,
+    Library(..),
+    require,
+    thenAsk
+    )
 
-{-| A style of interview in which we define the interview's ultimate requirements, and use a library of functions to 
-satisfy those requirements. Those final requirements might themselves have their own requirements that have to be satisfied.
+{-| A style of interview in which we define the interview's ultimate requirements and use a library of functions that can satisfy those requirements. Those final requirements might themselves have their own requirements that have to be satisfied.
+
+
+
+# The Model of the interview
+
+@docs DepModel, DepMsg
+
+@docs mkDepModel
+
+@docs updateDepModel
+
+# Questions to ask
+
+@docs Library
+
+@docs require, thenAsk
+
+# Views
+
+@docs mkDepModelView, mkTextQuestionView
 
 -}
 
@@ -13,19 +42,27 @@ import Html.Events exposing (onClick, onInput)
 
 
 
-{-| All DictModel interviews share this Msg type.
+{-| All DepModel interviews share this DepMsg type.
+
+The DependencyModel style of interviews stores the interview's state in a 
+`Dict Key (Question String)`. (and `Key` is just an alias to `String` for now). 
 
 -}
-type Msg = UpdateQuestion String String
+type DepMsg = UpdateQuestion String String
          | SaveQuestion String String
          | StartOver
          | GoBack 
 
 
-updateDepModel : Msg -> DepModel -> DepModel
+{-| The elm update function for the DepModel.
+
+Receives DepMsg values and a DepModel and uses them to 
+return a new DepModel. 
+-}
+updateDepModel : DepMsg -> DepModel -> DepModel
 updateDepModel msg model = 
     case msg of
-        UpdateQuestion k txt -> update k txt model
+        UpdateQuestion k txt -> updateDepModelQ k txt model
         SaveQuestion k txt -> save k txt model
         StartOver -> empty model
         GoBack -> case previousQuestion model of 
@@ -56,6 +93,8 @@ removeFromHistory key history =
 
 {-| Reset a question to an unanswered state with a key `Key` in a state Dictionary. 
 
+TODO this is only different from DictModel's version because we use a regular Dict here. 
+
 -}
 unanswerQuestion : Key -> Question String -> Dict Key (Question String) -> Dict Key (Question String)
 unanswerQuestion key q state = 
@@ -69,8 +108,8 @@ unanswerQuestion key q state =
 
 {-| Update a question in the DepModel.
 -}
-update : Key -> String -> DepModel -> DepModel
-update key txt model = { model | state = updateModelState key txt model.state }
+updateDepModelQ : Key -> String -> DepModel -> DepModel
+updateDepModelQ key txt model = { model | state = updateModelState key txt model.state }
 
 {-| Update just the state part of the model in a DepModel
 -}
@@ -162,6 +201,13 @@ type alias DepModel =
     , originalRequirements : List Key -- necessary to store, so we can start over.
     }
 
+{-| Create a new DepenedencyModel from a list of required keys for the interview.
+
+The order of this list of required keys will also determine the order of the interview, 
+except if any item in the list has its own dependencies. A question's dependencies 
+are asked before the question.
+
+-}
 mkDepModel : List Key -> DepModel
 mkDepModel requirements =
     { state = Dict.empty
@@ -184,7 +230,7 @@ From the current state of the model, it either shows the question currently bein
 or else shows the next required question, 
 
 -}
-mkDepModelView : Library -> (DepModel -> Html Msg) -> DepModel -> Html Msg
+mkDepModelView : Library -> (DepModel -> Html DepMsg) -> DepModel -> Html DepMsg
 mkDepModelView lib endView model = div []
     [ div [] [text "The interview"]
     , findQToAsk lib endView model
@@ -194,10 +240,10 @@ mkDepModelView lib endView model = div []
 
 First, check the requirements. If there are none left, we're done!
 If there are requirements, find the q to ask from the library.
-If the q's ready to be asked, then we'll have a (QuestionView DepModel (Html Msg).
+If the q's ready to be asked, then we'll have a (QuestionView DepModel (Html DepMsg).
 
 -}
-findQToAsk : Library -> (DepModel -> Html Msg) -> DepModel ->  (Html Msg) 
+findQToAsk : Library -> (DepModel -> Html DepMsg) -> DepModel ->  (Html DepMsg) 
 findQToAsk lib endView model = 
     case model.requirements of
         [] -> endView model
@@ -207,21 +253,26 @@ findQToAsk lib endView model =
                 Just q -> whatThis lib endView (q model) 
 
 
-whatThis : Library -> (DepModel -> Html Msg) -> Interviewer DepModel (Html Msg) -> Html Msg
+whatThis : Library -> (DepModel -> Html DepMsg) -> Interviewer DepModel (Html DepMsg) -> Html DepMsg
 whatThis lib endView interviewer = case interviewer of
     Continue model -> findQToAsk lib endView model
     Ask html -> html 
 
         
 
-{-| The library of questions 
+{-| Defines a library of question that might get asked. 
+
+The `Key`s in the Library identify how the assocated `QuestionView` will change the interview's 
+state. A question that asks the user for a 'firstname' would have the `Key` of 'firstname'.
+
+The interview uses this library to find questions that satisfy the `DependencyModel`'s requirements.
 
 -}
-type Library = Library (Dict Key (QuestionView DepModel (Html Msg)) )
+type Library = Library (Dict Key (QuestionView DepModel (Html DepMsg)) )
 
 
 {-| Try to find a question in the Library -}
-lookupInLibrary : Key -> Library -> Maybe (QuestionView DepModel (Html Msg))
+lookupInLibrary : Key -> Library -> Maybe (QuestionView DepModel (Html DepMsg))
 lookupInLibrary key (Library lib) = Dict.get key lib  
 
 type Requirements 
@@ -243,15 +294,16 @@ require requiredKeys model =
 lookupInState : Key -> Dict String (Question String) -> Maybe (Question String)
 lookupInState = Dict.get 
 
--- TODO delete
-deprecatedandThen : Html Msg -> Requirements -> Interviewer DepModel (Html Msg)
-deprecatedandThen q req = case req of 
-    Unsatisfied model needed -> Continue (pushToState model needed)
-    Satisfied _ -> Ask q
+{-| Tells the interview to ask a 'QuestionView' if its `Requirements` are met. 
 
+    q3 : QuestionView DepModel (Html DepMsg)
+    q3 model = model
+              |> require ["step1", "step2"]
+              |> thenAsk (mkTextQuestionView "step3" "How many?")
 
-andThen : QuestionView DepModel (Html Msg) -> Requirements -> Interviewer DepModel (Html Msg)
-andThen q req = case req of 
+-}
+thenAsk : QuestionView DepModel (Html DepMsg) -> Requirements -> Interviewer DepModel (Html DepMsg)
+thenAsk q req = case req of 
     Unsatisfied model needed -> Continue (pushToState model needed)
     Satisfied model -> q model
 
@@ -269,7 +321,8 @@ getMissing : DepModel -> List Key -> List Key
 getMissing model required = List.foldl (checkMissing model.state) [] required
 
 
-{-| Check if 
+{-| Check if the question matching a certain key has been Answered in an interview's 
+state.
 
 -}
 checkMissing : Dict String (Question String) -> Key -> List Key -> List Key
@@ -290,7 +343,7 @@ asks a single question.
 Takes a predictate Question that is Answered or Unanswered.
 And Takes a label
 -}
-mkTextQuestionView : String -> String -> DepModel -> Interviewer DepModel (Html Msg)
+mkTextQuestionView : String -> String -> DepModel -> Interviewer DepModel (Html DepMsg)
 mkTextQuestionView key label model = 
     let 
         -- find q in the model or make a new one
@@ -307,6 +360,6 @@ mkTextQuestionView key label model =
                 , text err
                 , button [onClick (SaveQuestion key txt)] [text "Continue"]
                 , button [onClick (GoBack)] [text "Go back"]
-                    ])
+                ])
         
 

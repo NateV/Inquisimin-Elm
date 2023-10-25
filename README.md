@@ -2,7 +2,7 @@
 
 **Early, early days of an experiment; a small plant I plan to grow slowly. Feedback welcomed.**
 
-[<img alt="alt_text" width="100px" src="Inquismin Logo.png" align="right"/>](https://github.com/NateV/Inquisimin-Elm)
+[<img alt="inquisimin_logo" width="100px" src="Inquismin Logo.png" align="right"/>](https://github.com/NateV/Inquisimin-Elm)
 
 Minimal guided interviews with Elm. 
 
@@ -21,12 +21,15 @@ interview m = Interview
     suggestUserTriesInquisiminOrSomethingElse
 ```
 
+Inquisimin is also an attempt to articulate what a Guided Interview _is_ from a functional perspective. With a good explanation of how guided interiviews work in this paradigm, it might be easier to reproduce them in other languages. If you're interested in the more conceptual exploration of "How do functional guided interviews work?", you might enjoy [this discussion](https://github.com/NateV/Inquisimin-Elm/blob/main/Concept.md).
 
 ## New to Elm?
 
 Inquisimin is a library to help write guided interviews in the Elm language. One of its goals is to _not_ be an all-inclusive platform for guided interviews. Instead it provides a handful of functions and patterns for making it easier to add guided interviews to a regular Elm application. You can pick and choose among these, and you can fit them into a larger application if you like.
 
-A consequence of this goal is that using Inquisimin requires installing Elm and learning at the least some basics about how to use it. If you are new to Elm, I recommend visiting the [Elm Introduction](https://guide.elm-lang.org/)
+A consequence of this goal is that using Inquisimin requires installing Elm and learning at the least some basics about how to use it. If you are new to Elm, I recommend visiting the [Elm Introduction](https://guide.elm-lang.org/). 
+
+And if you don't want to learn Elm, you still might find something helpful in how this tool is designed. One of the things I love about functional languages is how useful the concepts I learn in one language end up being for work in other more "traditional" lanaguages.
 
 
 ## Getting Started with a DictModel Interview
@@ -37,11 +40,6 @@ The `DictModel.elm` module provides helpers for creating a very simple interview
 2. Fuctions that define the questions we want to ask the user.
 
 3. An `interview` that desribes how these questions should get asked. 
-
-DictModel interviews can handle branching paths. See [this example](examples/BranchingDictModel.elm)
-
-DictModel interviews have other limitations. They currently don't support asking a user for an unknown number of some repeated item. (A `Collection` in the more complicated non-DictModel interviews). If you are using the helpers for making questions for users, these views will all create HTML views, so you cannot use Elm-UI instead. These interviews also do not currently support input validation. If these restrictions don't work for you, you'll need to go beyond `DictModel` interviews. We'll see in this section how `DictModel` interviews work, and then we'll see how to go beyond them in the next section.  
-
 
 In a DictModel interview, the `main` function is an ordinary `main` Elm function. The initial model is an Ordered Dictionary, and there's a helper, `mkDictModel`, to create it. The `update` method is `updateDictModel` from `DictModel.elm`. The view is `mkDictModelInterviewView`, also from `DictModel.Elm`. You need to write your own `interview` function, though, so we'll define that a couple lines down.
 
@@ -103,6 +101,13 @@ This function describes the steps of the interview. First the interview will ask
 [^Either]: If you are familiar with the Either monad, `ask` and the `QuestionView`s basically work like the Either monad. 
 
 Now we've got everything we need for a simple guided interview running in the browser. We'll ask a series of questions to the user and present them with the results. From there, other parts of an application can do something else with that collected data.
+
+### Where a DictModel can and cannot get you
+
+DictModel interviews can handle branching paths. See [this example](examples/BranchingDictModel.elm)
+
+DictModel interviews have other limitations. They currently don't support asking a user for an unknown number of some repeated item. (A `Collection` in the more complicated non-DictModel interviews). If you are using the helpers for making questions for users, these views will all create HTML views, so you cannot use Elm-UI instead. These interviews also do not currently support input validation. If these restrictions don't work for you, you'll need to go beyond `DictModel` interviews. We'll see in this section how `DictModel` interviews work, and then we'll see how to go beyond them in the next section.  
+
 
 
 ## Complexity beyond what DictModel can handle: TypedModel Interviews
