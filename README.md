@@ -246,7 +246,7 @@ An option that doesn't ask any more questions simply evaluates to `Continue mode
 If the the user needs to provide some input, the question should evaluate to `Ask (Html Msg)`. 
 This might be a question asking the user about which branch they want to go down. Or it might be a chain of questions related to the branch. 
 
-```
+```elm
 
 {-| Find out if a user wants to record details of pizza. If so, send the user to questions about pizza.
 -}
@@ -300,7 +300,7 @@ collectColors model = case (getComplete model.colors) of
 
 Then `collectColors_` presents the html to the user. The helper `collectColor` gives a snippet html that can update a single stored `Color` in the model's `Collection`. `collectColors_` renders all the needed one-color snippets and adds buttons for adding more colors or finishing the collection. 
 
-```
+```elm
 
 collectColors_ : Model ->  (Html Msg)
 collectColors_ model = div [] (
