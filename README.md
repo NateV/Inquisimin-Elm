@@ -128,14 +128,14 @@ A `Question a` is a type that:
 
 Here's an example parser that requires user inputs to be integers:
 
-```
+```elm
 requireInt : String -> Valid Int
 requireInt txt = case String.toInt txt of
     Just i -> Valid i
     Nothing -> Error (txt ++ " is not an integer.")
 
 
-```
+```elm
 
 `mkq` can help you make a `Question`. 
 
