@@ -135,11 +135,11 @@ requireInt txt = case String.toInt txt of
     Nothing -> Error (txt ++ " is not an integer.")
 
 
-```elm
+```
 
 `mkq` can help you make a `Question`. 
 
-```
+```elm
 myIntQuestion = mkq requireInt
 ```
 
